@@ -64,43 +64,44 @@ public class OpenUtils implements ModInitializer {
 	public void onInitialize() {
 		new ConfigSystem().checkConfig();
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			ClientPlayerEntity player = MinecraftClient.getInstance().player;
-			if (player != null) {
-				String currentPlayerName = player.getName().getString();
-				if (!playerName.equals(currentPlayerName)) {
-					playerName = currentPlayerName;
-					createMusicSocket();
-				}
-
-				int minutes = Calendar.getInstance().get(Calendar.MINUTE);
-				int change = configFile.getAsJsonObject().get("timer_change").getAsInt();
-				if (minutes == getReminderTime(change, 0) || minutes == getReminderTime(change, 20) || minutes == getReminderTime(change, 40)) {
-					if (!remindedForToday) {
-						remindedForToday = true;
-						if (configFile.getAsJsonObject().get("send_toast").getAsBoolean()) {
-							client.getToastManager().add(
-									new SystemToast(SystemToast.Type.PERIODIC_NOTIFICATION,
-											Text.literal("Marknadsgränsen har återställts!"),
-											Text.literal("Du kan nu sälja igen!")
-									)
-							);
-						}
-						if (configFile.getAsJsonObject().get("use_sound").getAsBoolean()) {
-							player.playSound(SoundEvents.BLOCK_BELL_USE);
-						}
+			try {
+				ClientPlayerEntity player = client.player;
+				if (player != null) {
+					String currentPlayerName = player.getName().getString();
+					if (!playerName.equals(currentPlayerName)) {
+						playerName = currentPlayerName;
+						createMusicSocket();
 					}
-				} else {
-					remindedForToday = false;
+
+					int minutes = Calendar.getInstance().get(Calendar.MINUTE);
+					int change = configFile.getAsJsonObject().get("timer_change").getAsInt();
+					if (minutes == getReminderTime(change, 0) || minutes == getReminderTime(change, 20) || minutes == getReminderTime(change, 40)) {
+						if (!remindedForToday) {
+							remindedForToday = true;
+							if (configFile.getAsJsonObject().get("send_toast").getAsBoolean()) {
+								client.getToastManager().add(
+										new SystemToast(SystemToast.Type.PERIODIC_NOTIFICATION,
+												Text.literal("Marknadsgränsen har återställts!"),
+												Text.literal("Du kan nu sälja igen!")
+										)
+								);
+							}
+							if (configFile.getAsJsonObject().get("use_sound").getAsBoolean()) {
+								player.playSound(SoundEvents.BLOCK_BELL_USE);
+							}
+						}
+					} else {
+						remindedForToday = false;
+					}
 				}
-			}
-			if (musicSocket != null) {
-//				LOGGER.info(String.valueOf(client.options.getSoundVolume(SoundCategory.RECORDS) * client.options.getSoundVolume(SoundCategory.MASTER)));
-				double mbVolume = client.options.getSoundVolume(SoundCategory.RECORDS) * client.options.getSoundVolume(SoundCategory.MASTER);
-				if (mbVolume != oldMBVolume) {
-					musicSocket.set_volume(mbVolume);
-					oldMBVolume = mbVolume;
+				if (musicSocket != null) {
+					double mbVolume = client.options.getSoundVolume(SoundCategory.RECORDS) * client.options.getSoundVolume(SoundCategory.MASTER);
+					if (mbVolume != oldMBVolume) {
+						musicSocket.set_volume(mbVolume);
+						oldMBVolume = mbVolume;
+					}
 				}
-			}
+			} catch (Exception ignored) {}
 		});
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
@@ -126,18 +127,6 @@ public class OpenUtils implements ModInitializer {
 			registerAlias(dispatcher, "searchAPI", regLookupCommand);
 			registerAlias(dispatcher, "openUtils:searchAPI", regLookupCommand);
 			registerAlias(dispatcher, "openUtils:lookup", regLookupCommand);
-
-			LiteralArgumentBuilder<FabricClientCommandSource> setVolume = ClientCommandManager.literal("set_volume")
-					.executes(createFeedbackExecutor("set_volume"))
-					.then(ClientCommandManager.argument("volume", DoubleArgumentType.doubleArg())
-							.executes(context -> {
-								double volume = DoubleArgumentType.getDouble(context, "volume");
-								MinecraftClient client = MinecraftClient.getInstance();
-								client.send(() -> musicSocket.set_volume(volume));
-								return 1;
-							})
-					);
-			LiteralCommandNode<FabricClientCommandSource> setVolumeCommand = dispatcher.register(setVolume);
 		});
 	}
 
@@ -156,10 +145,12 @@ public class OpenUtils implements ModInitializer {
 
 	private static Collection<String> getOnlinePlayerNames() {
 		MinecraftClient client = MinecraftClient.getInstance();
-		if (client.player.networkHandler != null) {
-			return client.getNetworkHandler().getPlayerList().stream()
-					.map(player -> player.getProfile().getName())
-					.collect(Collectors.toList());
+		if (client.player != null) {
+			if (client.player.networkHandler != null) {
+				return client.player.networkHandler.getPlayerList().stream()
+						.map(player -> player.getProfile().getName())
+						.collect(Collectors.toList());
+			}
 		}
 		return Collections.emptyList();
 	}

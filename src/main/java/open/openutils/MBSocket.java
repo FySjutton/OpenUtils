@@ -48,7 +48,6 @@ public class MBSocket {
             audioClip = (Clip) AudioSystem.getLine(info);
             audioClip.open(audioStream);
 
-//            LOGGER.info(String.valueOf(audioClip.isOpen()));
             set_volume(MinecraftClient.getInstance().options.getSoundVolume(SoundCategory.RECORDS) * MinecraftClient.getInstance().options.getSoundVolume(SoundCategory.MASTER));
             // this will only play it once, no loop, but hopefully that's fine :P
 
@@ -60,15 +59,12 @@ public class MBSocket {
     }
 
     public void set_volume(double volume) {
-        LOGGER.info("CHANGIN");
         if (audioClip != null) {
             LOGGER.info("[OpenUtils] MB music volume set to " + volume + ".");
-//            LOGGER.info(String.valueOf(((FloatControl) audioClip.getControl(FloatControl.Type.MASTER_GAIN)).getValue()));
             FloatControl gainControl = ((FloatControl) audioClip.getControl(FloatControl.Type.MASTER_GAIN));
 
             float dB = (float) (Math.log(volume) / Math.log(10.0) * 20.0);
             gainControl.setValue(dB);
-//            LOGGER.info(String.valueOf(((FloatControl) audioClip.getControl(FloatControl.Type.MASTER_GAIN)).getValue()));
         }
     }
 
@@ -85,7 +81,6 @@ public class MBSocket {
             LOGGER.info("[OpenUtils] MB music resumed.");
             audioClip.setMicrosecondPosition(resumeTime);
             audioClip.start();
-//            LOGGER.info(String.valueOf(Math.round((float) audioClip.getMicrosecondPosition() / (float) audioClip.getMicrosecondLength(), 5)));
         }
     }
 
