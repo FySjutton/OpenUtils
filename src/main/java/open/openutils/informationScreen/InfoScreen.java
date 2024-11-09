@@ -11,6 +11,7 @@ import net.minecraft.client.gui.tab.TabManager;
 import net.minecraft.client.gui.widget.GridWidget;
 import net.minecraft.client.gui.widget.TabButtonWidget;
 import net.minecraft.client.gui.widget.TabNavigationWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -50,7 +51,7 @@ public class InfoScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        context.drawGuiTexture(SEARCH_ICON, width / 2 - width / 6 - 15, 31, 12, 12);
+        context.drawGuiTexture(RenderLayer::getGuiTextured, SEARCH_ICON, width / 2 - width / 6 - 15, 31, 12, 12);
     }
 
     private class newTab extends GridScreenTab {

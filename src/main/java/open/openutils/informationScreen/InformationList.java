@@ -103,7 +103,7 @@ public class InformationList extends ElementListWidget<InformationList.Entry> {
                             String gamemode = setting.replaceAll("_win_percent", "");
                             int total = data.get(gamemode + "_games_played").getAsInt();
                             int wins = data.get(gamemode + "_wins").getAsInt();
-                            value = String.format("%.3g", (double) (total > 0 ? wins / total *  100 : 0)) + "%";
+                            value = String.format("%.3g", (total > 0 ? (double) wins / total * 100 : 0)) + "%";
                         } catch (Exception e) {
                             value = "-%";
                         }
