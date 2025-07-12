@@ -3,7 +3,6 @@ package avox.openutils;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import dev.isxander.yacl3.api.ConfigCategory;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import net.minecraft.client.MinecraftClient;
@@ -55,6 +54,6 @@ public abstract class Module<T extends Module.ModuleConfig> {
 
     public static abstract class ModuleConfig {
         @SerialEntry
-        public boolean enableModule = true;
+        public boolean moduleEnabled = true;
     }
 }

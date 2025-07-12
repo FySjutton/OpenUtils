@@ -7,7 +7,6 @@ import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
 import dev.isxander.yacl3.api.OptionGroup;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
-import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -16,27 +15,27 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 public class StatsModule extends Module<StatsModule.Config> {
+    public static final StatsModule INSTANCE = new StatsModule(MinecraftClient.getInstance());
+
     public static class Config extends ModuleConfig {
     }
 
     private static KeyBinding statScreen;
 
-    public StatsModule() {
+    private StatsModule(MinecraftClient client) {
         super("stats", Config.class);
         statScreen = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            Text.translatable("openmodpack.keybind.stat_screen").getString(),
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_V,
-            Text.translatable("openmodpack.category").getString()
+                "Statistik Skärmen",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_V,
+                "OpenUtils"
         ));
     }
 
     @Override
     public void tick(MinecraftClient client) {
-        if (config.enableModule) {
-            if (statScreen.wasPressed()) {
-                client.setScreen(new StatScreen());
-            }
+        if (config.moduleEnabled && statScreen.wasPressed()) {
+            client.setScreen(new StatScreen());
         }
     }
 
@@ -48,13 +47,17 @@ public class StatsModule extends Module<StatsModule.Config> {
     @Override
     public void loadConfig(ConfigCategory.Builder category) {
         category.group(OptionGroup.createBuilder()
-                .name(Text.of("Stats"))
+                .name(Text.of("Statistikskärmen"))
                 .option(Option.<Boolean>createBuilder()
-                        .name(Text.of("Enable Module"))
-                        .description(OptionDescription.of(Text.of("Om du vill ha \"Stats\" modulen aktiverad.")))
-                        .binding(config.enableModule, () -> config.enableModule, val -> config.enableModule = val)
+                        .name(Text.of("Använd Modul"))
+                        .description(OptionDescription.of(Text.of("Om du vill ha statistik påslagen, rekommenderas.")))
+                        .binding(config.moduleEnabled, () -> config.moduleEnabled, val -> config.moduleEnabled = val)
                         .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
                         .build())
                 .build());
+    }
+
+    public StatsModule.Config getConfig() {
+        return config;
     }
 }
