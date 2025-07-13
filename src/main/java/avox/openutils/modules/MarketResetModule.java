@@ -18,6 +18,7 @@ import net.minecraft.util.Identifier;
 import java.util.Calendar;
 
 import static avox.openutils.OpenUtils.*;
+import static avox.openutils.SubserverManager.playerOn90gQopen;
 
 public class MarketResetModule extends Module<MarketResetModule.Config> {
     public static final MarketResetModule INSTANCE = new MarketResetModule(MinecraftClient.getInstance());
@@ -47,7 +48,7 @@ public class MarketResetModule extends Module<MarketResetModule.Config> {
     };
 
     private MarketResetModule(MinecraftClient client) {
-        super("market_reset", Config.class);
+        super("market_reset", 3, Config.class);
 
         HudElementRegistry.addFirst(
             Identifier.of("openutils", "market_party"),
@@ -160,25 +161,25 @@ public class MarketResetModule extends Module<MarketResetModule.Config> {
                 .option(Option.<Boolean>createBuilder()
                         .name(Text.of("Använd Modul"))
                         .description(OptionDescription.of(Text.of("Slå på eller av marknadsnotifikationerna.")))
-                        .binding(config.moduleEnabled, () -> config.moduleEnabled, val -> config.moduleEnabled = val)
+                        .binding(true, () -> config.moduleEnabled, val -> config.moduleEnabled = val)
                         .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
                         .build())
                 .option(Option.<SurvivalMarket>createBuilder()
                         .name(Text.of("Notifikationskrav"))
                         .description(OptionDescription.of(Text.of("Vilket krav som krävs för att notifikationen ska skickas.")))
-                        .binding(config.sendRequirement, () -> config.sendRequirement, newVal -> config.sendRequirement = newVal)
+                        .binding(SurvivalMarket.IN_SURVIVAL, () -> config.sendRequirement, newVal -> config.sendRequirement = newVal)
                         .controller(opt -> EnumControllerBuilder.create(opt).enumClass(SurvivalMarket.class))
                         .build())
                 .option(Option.<Boolean>createBuilder()
                         .name(Text.of("Party Mode"))
                         .description(OptionDescription.of(Text.of("Om du vill aktivera party mode eller inte.")))
-                        .binding(config.partyMode, () -> config.partyMode, newVal -> config.partyMode = newVal)
+                        .binding(false, () -> config.partyMode, newVal -> config.partyMode = newVal)
                         .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
                         .build())
                 .option(Option.<Integer>createBuilder()
                         .name(Text.of("Notifikationsfördröjning"))
                         .description(OptionDescription.of(Text.of("Hur många minuter efter resetten som notifikationen ska skickas.")))
-                        .binding(config.notificationOffset, () -> config.notificationOffset, newVal -> config.notificationOffset = newVal)
+                        .binding(0, () -> config.notificationOffset, newVal -> config.notificationOffset = newVal)
                         .controller(opt -> IntegerSliderControllerBuilder.create(opt)
                                 .range(0, 19)
                                 .step(1)
@@ -187,7 +188,7 @@ public class MarketResetModule extends Module<MarketResetModule.Config> {
                 .option(Option.<Boolean>createBuilder()
                         .name(Text.of("Använd Ljud"))
                         .description(OptionDescription.of(Text.of("Om ett litet klock-ljud ska spelas när notifikationen skickas.")))
-                        .binding(config.useSound, () -> config.useSound, newVal -> config.useSound = newVal)
+                        .binding(true, () -> config.useSound, newVal -> config.useSound = newVal)
                         .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
                         .build())
 

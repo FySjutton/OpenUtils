@@ -3,30 +3,31 @@ package avox.openutils;
 import dev.isxander.yacl3.api.ConfigCategory;
 import net.minecraft.client.MinecraftClient;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ModuleManager {
-    private static final Map<String, Module> modules = new HashMap<>();
+    private final Map<String, Module> moduleMap = new HashMap<>();
+    private final List<Module> sortedModules = new ArrayList<>();
 
     public void registerModule(Module module) {
-        modules.put(module.getId(), module);
+        moduleMap.put(module.getId(), module);
+        sortedModules.add(module);
+        sortedModules.sort(Comparator.comparingInt(a -> a.priority));
     }
 
     public void tick(MinecraftClient client) {
-        for (Module module : modules.values()) {
-           module.tick(client);
+        for (Module module : sortedModules) {
+            module.tick(client);
+        }
+    }
+
+    public void loadConfig(ConfigCategory.Builder category) {
+        for (Module module : sortedModules) {
+            module.loadConfig(category);
         }
     }
 
     public List<Module> getAllModules() {
-        return modules.values().stream().toList();
-    }
-
-    public void loadConfig(ConfigCategory.Builder category) {
-        for (Module module : modules.values()) {
-            module.loadConfig(category);
-        }
+        return List.copyOf(sortedModules);
     }
 }

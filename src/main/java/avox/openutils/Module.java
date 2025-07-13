@@ -9,10 +9,12 @@ import net.minecraft.client.MinecraftClient;
 
 public abstract class Module<T extends Module.ModuleConfig> {
     private final String id;
+    public final int priority;
     protected T config;
 
-    public Module(String id, Class<T> configClass) {
+    public Module(String id, int priority, Class<T> configClass) {
         this.id = id;
+        this.priority = priority;
         this.config = createDefaultConfig(configClass);
     }
 

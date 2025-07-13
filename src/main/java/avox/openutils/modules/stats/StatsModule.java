@@ -23,7 +23,7 @@ public class StatsModule extends Module<StatsModule.Config> {
     private static KeyBinding statScreen;
 
     private StatsModule(MinecraftClient client) {
-        super("stats", Config.class);
+        super("stats", 1, Config.class);
         statScreen = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "Statistik Skärmen",
                 InputUtil.Type.KEYSYM,
@@ -51,7 +51,7 @@ public class StatsModule extends Module<StatsModule.Config> {
                 .option(Option.<Boolean>createBuilder()
                         .name(Text.of("Använd Modul"))
                         .description(OptionDescription.of(Text.of("Om du vill ha statistik påslagen, rekommenderas.")))
-                        .binding(config.moduleEnabled, () -> config.moduleEnabled, val -> config.moduleEnabled = val)
+                        .binding(true, () -> config.moduleEnabled, val -> config.moduleEnabled = val)
                         .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
                         .build())
                 .build());

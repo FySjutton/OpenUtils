@@ -40,7 +40,7 @@ public class QuestModule extends Module<QuestModule.Config> {
     private boolean questsInitialized = false;
 
     private QuestModule(MinecraftClient client) {
-        super("quests", Config.class);
+        super("quests", 2, Config.class);
         questScreen = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "Uppdragsskärmen",
                 InputUtil.Type.KEYSYM,
@@ -111,7 +111,7 @@ public class QuestModule extends Module<QuestModule.Config> {
             .option(Option.<Boolean>createBuilder()
                     .name(Text.of("Använd Modul"))
                     .description(OptionDescription.of(Text.of("Om du vill använda quest pad funktionen.")))
-                    .binding(config.moduleEnabled, () -> config.moduleEnabled, val -> config.moduleEnabled = val)
+                    .binding(true, () -> config.moduleEnabled, val -> config.moduleEnabled = val)
                     .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
                     .build())
             .option(Option.<Integer>createBuilder()
