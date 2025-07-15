@@ -68,16 +68,12 @@ public class QuestModule extends Module<QuestModule.Config> {
             }
         });
 
-        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((mc, world) -> {
+        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((mc, world) -> taskQueue.add(new DelayedTask(50, () -> {
             if (config.moduleEnabled && playerInSurvival() && !questsInitialized) {
-                taskQueue.add(new OpenUtils.DelayedTask(50, () -> {
-                    if (playerInSurvival()) {
-                        QuestManager.reloadQuests();
-                        questsInitialized = true;
-                    }
-                }));
+                QuestManager.reloadQuests();
+                questsInitialized = true;
             }
-        });
+        })));
     }
 
     @Override

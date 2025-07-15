@@ -9,6 +9,7 @@
     "requireAnnotations": true
   },
   "client": [
+    "ClientAdvancementManagerMixin",
     "HandledScreenMixin",
     "InGameHudMixin"
   ]

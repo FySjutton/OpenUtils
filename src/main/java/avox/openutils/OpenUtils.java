@@ -2,6 +2,7 @@ package avox.openutils;
 
 import avox.openutils.config.ConfigSystem;
 import avox.openutils.modules.MarketResetModule;
+import avox.openutils.modules.ResourceAdvancementRemoverModule;
 import avox.openutils.modules.quests.QuestModule;
 import avox.openutils.modules.stats.StatsModule;
 import net.fabricmc.api.ModInitializer;
@@ -41,6 +42,7 @@ public class OpenUtils implements ModInitializer {
 		moduleManager.registerModule(StatsModule.INSTANCE);
 		moduleManager.registerModule(QuestModule.INSTANCE);
 		moduleManager.registerModule(MarketResetModule.INSTANCE);
+//		moduleManager.registerModule(ResourceAdvancementRemoverModule.INSTANCE); // Feature not ready
 
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
 			// Load the config
@@ -77,12 +79,8 @@ public class OpenUtils implements ModInitializer {
 			updateListeners();
 		});
 
-		ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> {
-			taskQueue.add(new DelayedTask(20, () -> detectSubserver(client)));
-		});
+		ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> taskQueue.add(new DelayedTask(20, () -> detectSubserver(client))));
 	}
-
-
 
 	public static boolean playerInSurvival() {
 		return getActiveSubServer().equals(Subserver.SURVIVAL_SPAWN) || getActiveSubServer().equals(Subserver.SURVIVAL_PLOT) || getActiveSubServer().equals(Subserver.SURVIVAL_RESOURCE);
