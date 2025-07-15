@@ -25,15 +25,20 @@ public class ResourceAdvancementRemoverModule extends Module<ResourceAdvancement
         super("resource_advancement_remover", 7, Config.class);
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
+            LOGGER.info(message.getString());
             if (message.getString().startsWith("Du har blivit teleportad till en slumpmässig plats i världen!")) {
                 awaitingWorldChange = true;
+                removeAdvancements = true;
+                LOGGER.info("NEW RESURS");
             }
         });
 
         ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((mc, world) -> {
+            LOGGER.info("WORLD CHANGED");
             if (awaitingWorldChange) {
+                LOGGER.info("DETECTED");
                 awaitingWorldChange = false;
-                removeAdvancements = true;
+                LOGGER.info("ADDING TASK; removeAdvancements ON; WILL BE DISABLED IN 3 seconds!!");
                 taskQueue.add(new OpenUtils.DelayedTask(20 * 3, () -> removeAdvancements = false));
             }
         });

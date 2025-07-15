@@ -10,6 +10,7 @@
   },
   "client": [
     "ClientAdvancementManagerMixin",
+    "ClientPlayNetworkHandlerMixin",
     "HandledScreenMixin",
     "InGameHudMixin"
   ]
