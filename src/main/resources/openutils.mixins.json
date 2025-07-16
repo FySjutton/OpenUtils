@@ -11,7 +11,11 @@
   "client": [
     "ClientAdvancementManagerMixin",
     "ClientPlayNetworkHandlerMixin",
+    "GenericContainerScreenMixin",
     "HandledScreenMixin",
     "InGameHudMixin"
+  ],
+  "mixins": [
+    "ScreenHandlerMixin"
   ]
 }

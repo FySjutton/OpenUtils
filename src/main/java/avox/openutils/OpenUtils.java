@@ -5,6 +5,8 @@ import avox.openutils.modules.MarketResetModule;
 import avox.openutils.modules.ResourceAdvancementRemoverModule;
 import avox.openutils.modules.quests.QuestModule;
 import avox.openutils.modules.stats.StatsModule;
+import avox.openutils.modules.stock.StockModule;
+import avox.openutils.modules.stock.TestingTool;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -43,6 +45,7 @@ public class OpenUtils implements ModInitializer {
 		moduleManager.registerModule(QuestModule.INSTANCE);
 		moduleManager.registerModule(MarketResetModule.INSTANCE);
 //		moduleManager.registerModule(ResourceAdvancementRemoverModule.INSTANCE); // Feature not ready
+		moduleManager.registerModule(StockModule.INSTANCE);
 
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
 			// Load the config
