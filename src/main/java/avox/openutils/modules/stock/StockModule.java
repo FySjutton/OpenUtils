@@ -126,8 +126,8 @@ public class StockModule extends Module<StockModule.Config> {
         loadPage(client, screen, () -> {
             client.setScreen(null);
             client.setScreen(new StockScreen());
-
-            TestingTool.save();
+//
+//            TestingTool.save();
         });
     }
 
@@ -139,7 +139,7 @@ public class StockModule extends Module<StockModule.Config> {
                 if (screen.getSlot(i).hasStack()) {
                     stockItems.add(new StockItem(screen.getSlot(i).getStack()));
 
-                    TestingTool.itemCache.add(screen.getSlot(i).getStack());
+//                    TestingTool.itemCache.add(screen.getSlot(i).getStack());
                 }
             }
 

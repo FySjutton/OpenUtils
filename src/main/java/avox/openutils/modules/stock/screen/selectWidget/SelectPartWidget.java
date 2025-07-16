@@ -1,5 +1,6 @@
 package avox.openutils.modules.stock.screen.selectWidget;
 
+import avox.openutils.modules.stock.screen.StockScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -10,30 +11,74 @@ import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 
-import static avox.openutils.OpenUtils.LOGGER;
+import static avox.openutils.modules.stock.screen.StockScreen.options;
 
 public class SelectPartWidget extends ElementListWidget<SelectPartWidget.Entry> {
     private final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+    private final StockScreen stockScreen;
+    public boolean multiselect;
+    public String category;
 
-    public SelectPartWidget(int width, int height, HashMap<String, Boolean> options) {
-        super(MinecraftClient.getInstance(), 100, options.size() * 20, 0, 20);
+    public int elmWidth;
+    public int posX;
+    public int posY;
 
-        for (String option : options.keySet()) {
-            addEntry(new Entry(option, options.get(option)));
+    public SelectPartWidget(StockScreen stockScreen, String category, int width, int height, int x, int y, boolean multiselect) {
+        super(MinecraftClient.getInstance(), width, height, y + 20, 20);
+        setX(x);
+
+        this.multiselect = multiselect;
+        this.category = category;
+        this.stockScreen = stockScreen;
+
+        this.elmWidth = width;
+        this.posX = x;
+        this.posY = y;
+
+        for (String option : options.get(category).keySet()) {
+            addEntry(new Entry(option, options.get(category).get(option)));
         }
     }
 
     @Override
     protected int getScrollbarX() {
-        return width - 15;
+        return posX + elmWidth - 5;
     }
 
     @Override
     public int getRowWidth() {
-        return width - 15;
+        return posX + elmWidth - 5;
+    }
+
+    @Override
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+        super.renderWidget(context, mouseX, mouseY, deltaTicks);
+    }
+
+    @Override
+    protected void drawHeaderAndFooterSeparators(DrawContext context) {
+        context.drawHorizontalLine(posX, posX + elmWidth, posY + 20, 0xFF6e6e6e);
+        context.drawHorizontalLine(posX, posX + elmWidth, posY + height + 20, 0xFF6e6e6e);
+    }
+
+    public void toggleCheckbox(CheckboxWidget widget, boolean newValue) {
+        options.get(category).replace(widget.getMessage().getString(), newValue);
+
+        if (!multiselect) {
+            for (Entry child : this.children()) {
+                if (child.checkbox != widget) {
+                    child.checkbox.checked = false;
+                    options.get(category).replace(child.checkbox.getMessage().getString(), false);
+                } else {
+                    widget.checked = true;
+                    options.get(category).replace(widget.getMessage().getString(), true);
+                }
+            }
+        }
+        stockScreen.filterChanged();
     }
 
     public class Entry extends ElementListWidget.Entry<Entry> {
@@ -42,9 +87,7 @@ public class SelectPartWidget extends ElementListWidget<SelectPartWidget.Entry> 
         public Entry(String name, boolean checked) {
             checkbox = CheckboxWidget.builder(Text.of(name), textRenderer)
                     .checked(checked)
-                    .callback((widget, selected) -> {
-                        LOGGER.info(widget.getMessage().getString() + " is now " + selected);
-                    })
+                    .callback(SelectPartWidget.this::toggleCheckbox)
                     .build();
         }
 
@@ -65,7 +108,7 @@ public class SelectPartWidget extends ElementListWidget<SelectPartWidget.Entry> 
         @Override
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             checkbox.setY(y);
-            checkbox.setX(10);
+            checkbox.setX(posX + 3);
             checkbox.render(context, mouseX, mouseY, tickDelta);
         }
     }
