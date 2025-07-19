@@ -70,10 +70,12 @@ public class Formatter {
 
         if (key.equals("progress")) {
             boolean survival = category.equals("survival");
-            int experience = Integer.parseInt(newValue);
-            int experienceForNext = levelToExperience(experienceToLevel(experience, survival) + 1, survival);
-            int progress = (int) (((double)experience / experienceForNext) * 100);
-            newValue = String.format("%.2f", (double)experience / experienceForNext * 100) + "% §a" + "▏".repeat(progress) + "§c" + "▏".repeat(Math.max(0, 100 - progress));
+            int totalExperience = Integer.parseInt(newValue);
+            int currentLevel = experienceToLevel(totalExperience, survival);
+            int experience = totalExperience - levelToExperience(currentLevel, survival);
+            int nextLevelExp = levelToExperience(currentLevel + 1, survival) - levelToExperience(currentLevel, survival);
+            double progress = (double) experience / nextLevelExp * 100;
+            newValue = String.format("%.2f", progress) + "% §a" + "▏".repeat((int) progress) + "§c" + "▏".repeat((int) Math.max(0, 100 - progress));
         }
 
         if (newValue.matches("\\d+")) {
