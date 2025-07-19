@@ -1,12 +1,11 @@
 package avox.openutils;
 
 import avox.openutils.config.ConfigSystem;
+import avox.openutils.modules.AdvancementRemoverModule;
 import avox.openutils.modules.MarketResetModule;
-import avox.openutils.modules.ResourceAdvancementRemoverModule;
 import avox.openutils.modules.quests.QuestModule;
 import avox.openutils.modules.stats.StatsModule;
 import avox.openutils.modules.stock.StockModule;
-import avox.openutils.modules.stock.TestingTool;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -14,19 +13,12 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.toast.SystemToast;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardDisplaySlot;
-import net.minecraft.scoreboard.ScoreboardEntry;
-import net.minecraft.scoreboard.Team;
 import net.minecraft.text.Text;
-import net.minecraft.world.GameMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static avox.openutils.SubserverManager.*;
@@ -44,7 +36,7 @@ public class OpenUtils implements ModInitializer {
 		moduleManager.registerModule(StatsModule.INSTANCE);
 		moduleManager.registerModule(QuestModule.INSTANCE);
 		moduleManager.registerModule(MarketResetModule.INSTANCE);
-//		moduleManager.registerModule(ResourceAdvancementRemoverModule.INSTANCE); // Feature not ready
+		moduleManager.registerModule(AdvancementRemoverModule.INSTANCE);
 		moduleManager.registerModule(StockModule.INSTANCE);
 
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> {

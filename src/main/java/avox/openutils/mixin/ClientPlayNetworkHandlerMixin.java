@@ -1,6 +1,6 @@
 package avox.openutils.mixin;
 
-import avox.openutils.modules.ResourceAdvancementRemoverModule;
+import avox.openutils.modules.AdvancementRemoverModule;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.toast.RecipeToast;
 import net.minecraft.client.toast.ToastManager;
@@ -9,11 +9,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import static avox.openutils.OpenUtils.LOGGER;
-
 @Mixin(ClientPlayNetworkHandler.class)
 public class ClientPlayNetworkHandlerMixin {
-
     @Redirect(
             method = "onRecipeBookAdd",
             at = @At(
@@ -22,12 +19,8 @@ public class ClientPlayNetworkHandlerMixin {
             )
     )
     private void blockAdvancementToasts(ToastManager toastManager, RecipeDisplay display) {
-        if (!ResourceAdvancementRemoverModule.removeAdvancements) {
+        if (!AdvancementRemoverModule.removeAdvancements) {
             RecipeToast.show(toastManager, display);
-        } else {
-            LOGGER.info("Recipe blocked!");
-//            LOGGER.info("type" + display.getType().toString());
-//            LOGGER.info("toast" + toast.toString());
         }
     }
 }

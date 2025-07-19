@@ -5,48 +5,28 @@ import avox.openutils.OpenUtils;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
-import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 
-import static avox.openutils.OpenUtils.LOGGER;
 import static avox.openutils.OpenUtils.taskQueue;
 
-public class ResourceAdvancementRemoverModule extends Module<ResourceAdvancementRemoverModule.Config> {
-    public static final ResourceAdvancementRemoverModule INSTANCE = new ResourceAdvancementRemoverModule(MinecraftClient.getInstance());
-
-    public static class Config extends ModuleConfig {
-    }
-
+public class AdvancementRemoverModule extends Module<AdvancementRemoverModule.Config> {
+    public static final AdvancementRemoverModule INSTANCE = new AdvancementRemoverModule(MinecraftClient.getInstance());
+    public static class Config extends ModuleConfig {}
     public static boolean removeAdvancements = false;
-    private boolean awaitingWorldChange = false;
 
-    private ResourceAdvancementRemoverModule(MinecraftClient client) {
+    private AdvancementRemoverModule(MinecraftClient client) {
         super("resource_advancement_remover", 7, Config.class);
 
-        ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            LOGGER.info(message.getString());
-            if (message.getString().startsWith("Du har blivit teleportad till en slumpmässig plats i världen!")) {
-                awaitingWorldChange = true;
-                removeAdvancements = true;
-                LOGGER.info("NEW RESURS");
-            }
-        });
-
         ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((mc, world) -> {
-            LOGGER.info("WORLD CHANGED");
-            if (awaitingWorldChange) {
-                LOGGER.info("DETECTED");
-                awaitingWorldChange = false;
-                LOGGER.info("ADDING TASK; removeAdvancements ON; WILL BE DISABLED IN 3 seconds!!");
-                taskQueue.add(new OpenUtils.DelayedTask(20 * 3, () -> removeAdvancements = false));
-            }
+            removeAdvancements = true;
+            client.getToastManager().clear();
+            taskQueue.add(new OpenUtils.DelayedTask(20 * 3, () -> removeAdvancements = false));
         });
     }
 
     @Override
-    public void tick(MinecraftClient client) {
-    }
+    public void tick(MinecraftClient client) {}
 
     @Override
     protected Class<Config> getConfigClass() {
