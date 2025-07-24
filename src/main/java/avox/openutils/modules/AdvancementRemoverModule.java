@@ -46,8 +46,4 @@ public class AdvancementRemoverModule extends Module<AdvancementRemoverModule.Co
 
                 .build());
     }
-
-    public Config getConfig() {
-        return config;
-    }
 }

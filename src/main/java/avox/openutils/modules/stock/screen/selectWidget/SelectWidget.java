@@ -8,14 +8,9 @@ import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
-import static avox.openutils.OpenUtils.LOGGER;
 import static avox.openutils.modules.stock.screen.StockScreen.options;
 
 public class SelectWidget implements Drawable, Selectable, Element {

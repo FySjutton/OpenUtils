@@ -1,31 +1,19 @@
 package avox.openutils.modules.stock.screen;
 
 import avox.openutils.modules.stock.StockItem;
-import com.sun.jna.platform.win32.LMAccess;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ElementListWidget;
-import net.minecraft.client.render.item.model.ItemModelTypes;
-import net.minecraft.item.Items;
-import net.minecraft.item.SmithingTemplateItem;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static avox.openutils.modules.stock.StockModule.getItemName;
-import static avox.openutils.modules.stock.StockModule.stockItems;
 import static avox.openutils.modules.stock.screen.FilterManager.*;
-import static avox.openutils.modules.stock.screen.StockScreen.options;
-
-import static avox.openutils.OpenUtils.LOGGER;
 
 public class ListWidget extends ElementListWidget<ListWidget.Entry> {
     private final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;

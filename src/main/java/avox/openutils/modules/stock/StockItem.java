@@ -2,17 +2,13 @@ package avox.openutils.modules.stock;
 
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.Position;
 import net.minecraft.util.math.Vec3d;
 
 import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static avox.openutils.OpenUtils.LOGGER;
 
 public class StockItem {
     public ItemStack itemStack;
@@ -30,8 +26,6 @@ public class StockItem {
         for (Text line : lore.lines()) {
             String text = line.getString().trim();
             if (text.isEmpty()) continue;
-
-//            LOGGER.info(text);
 
             Matcher storageMatcher = Pattern.compile("Lager: (\\d+) st").matcher(text);
             if (storageMatcher.find()) {
@@ -63,13 +57,5 @@ public class StockItem {
                 }
             }
         }
-//        LOGGER.info("Storage: " + storage);
-//        LOGGER.info("Created: " + created);
-//        LOGGER.info("Bought: " + bought);
-//        LOGGER.info("Transactions: " + transactions);
-//        LOGGER.info("Earned: " + earned);
-//        if (position != null) {
-//            LOGGER.info("Position: " + position.x + " " + position.y + " " +  position.z);
-//        }
     }
 }

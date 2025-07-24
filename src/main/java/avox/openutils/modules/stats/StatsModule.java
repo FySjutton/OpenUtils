@@ -16,10 +16,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class StatsModule extends Module<StatsModule.Config> {
     public static final StatsModule INSTANCE = new StatsModule(MinecraftClient.getInstance());
-
-    public static class Config extends ModuleConfig {
-    }
-
+    public static class Config extends ModuleConfig {}
     private static KeyBinding statScreen;
 
     private StatsModule(MinecraftClient client) {
@@ -55,9 +52,5 @@ public class StatsModule extends Module<StatsModule.Config> {
                         .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
                         .build())
                 .build());
-    }
-
-    public StatsModule.Config getConfig() {
-        return config;
     }
 }

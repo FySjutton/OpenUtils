@@ -11,10 +11,10 @@ import net.minecraft.text.Text;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class StockScreen extends Screen {
     private final MinecraftClient client;
+    private final boolean guildScreen;
     private ListWidget listWidget;
 
     private SelectWidget filterWidget;
@@ -23,10 +23,11 @@ public class StockScreen extends Screen {
 
     public static HashMap<String, LinkedHashMap<String, Boolean>> options = new HashMap<>();
 
-    public StockScreen() {
+    public StockScreen(boolean guildScreen) {
         super(Text.of("Stock Screen"));
         client = MinecraftClient.getInstance();
         options.clear();
+        this.guildScreen = guildScreen;
     }
 
     @Override
@@ -35,7 +36,7 @@ public class StockScreen extends Screen {
             if (client.getNetworkHandler() == null) return;
             StockModule.ignoreNextScreen = true;
             close();
-            client.getNetworkHandler().sendChatCommand("stock guild");
+            client.getNetworkHandler().sendChatCommand(guildScreen ? "stock guild" : "stock player");
         }).dimensions(10, client.getWindow().getScaledHeight() - 25, 100, 20).build());
 
         int width = client.getWindow().getScaledWidth();

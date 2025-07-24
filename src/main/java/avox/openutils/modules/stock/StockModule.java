@@ -4,43 +4,27 @@ import avox.openutils.Module;
 import avox.openutils.modules.stock.screen.StockScreen;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
-import dev.isxander.yacl3.api.controller.EnumControllerBuilder;
-import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder;
-import dev.isxander.yacl3.config.v2.api.SerialEntry;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.EnchantableComponent;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static avox.openutils.OpenUtils.*;
-import static avox.openutils.SubserverManager.playerOn90gQopen;
 
 public class StockModule extends Module<StockModule.Config> {
     public static final StockModule INSTANCE = new StockModule(MinecraftClient.getInstance());
@@ -61,19 +45,8 @@ public class StockModule extends Module<StockModule.Config> {
 
     public static final ArrayList<StockItem> stockItems = new ArrayList<>();
 
-
-    private static KeyBinding TEST_KEYBIND;
-    private boolean testingLoaded = false;
-
     private StockModule(MinecraftClient client) {
         super("stock", 4, Config.class);
-
-        TEST_KEYBIND = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "TEST",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_G,
-                "OpenUtils"
-        ));
 
         HudElementRegistry.addLast(
                 Identifier.of("openutils", "stock_loading"),
@@ -87,17 +60,6 @@ public class StockModule extends Module<StockModule.Config> {
 
     @Override
     public void tick(MinecraftClient client) {
-        if (!testingLoaded) {
-            if (client.world != null) {
-                testingLoaded = true;
-                TestingTool.load();
-            }
-        }
-
-        if (TEST_KEYBIND.wasPressed()) {
-            client.setScreen(new StockScreen());
-        }
-
         if (waitingForLoad && client.currentScreen instanceof HandledScreen) {
             ScreenHandler screen = ((HandledScreen<?>) client.currentScreen).getScreenHandler();
             // Makes sure the server has updated
@@ -110,24 +72,22 @@ public class StockModule extends Module<StockModule.Config> {
         if (config.moduleEnabled) {
             if (!ignoreNextScreen && !screenOpen && playerInSurvival()) {
                 if (client.currentScreen instanceof HandledScreen) {
-                    if (client.currentScreen.getTitle().getString().equals("Guild-affärer")) {
+                    if (List.of("Dina affärer", "Guild-affärer").contains(client.currentScreen.getTitle().getString())) {
                         screenOpen = true;
                         ScreenHandler screen = ((HandledScreen<?>) client.currentScreen).getScreenHandler();
                         stockItems.clear();
-                        processGuildScreen(client, screen);
+                        processGuildScreen(client, screen, client.currentScreen.getTitle().getString().equals("Guild-affärer"));
                     }
                 }
             }
         }
     }
 
-    private void processGuildScreen(MinecraftClient client, ScreenHandler screen) {
+    private void processGuildScreen(MinecraftClient client, ScreenHandler screen, boolean guildScreen) {
         page = 1;
         loadPage(client, screen, () -> {
             client.setScreen(null);
-            client.setScreen(new StockScreen());
-//
-//            TestingTool.save();
+            client.setScreen(new StockScreen(guildScreen));
         });
     }
 
@@ -138,8 +98,6 @@ public class StockModule extends Module<StockModule.Config> {
             for (int i : itemSlots) {
                 if (screen.getSlot(i).hasStack()) {
                     stockItems.add(new StockItem(screen.getSlot(i).getStack()));
-
-//                    TestingTool.itemCache.add(screen.getSlot(i).getStack());
                 }
             }
 
@@ -210,9 +168,5 @@ public class StockModule extends Module<StockModule.Config> {
                         .build())
 
                 .build());
-    }
-
-    public Config getConfig() {
-        return config;
     }
 }

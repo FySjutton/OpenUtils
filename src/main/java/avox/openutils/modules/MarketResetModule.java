@@ -12,7 +12,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
 import java.util.Calendar;
@@ -193,10 +192,6 @@ public class MarketResetModule extends Module<MarketResetModule.Config> {
                         .build())
 
                 .build());
-    }
-
-    public Config getConfig() {
-        return config;
     }
 
     public enum SurvivalMarket implements NameableEnum {
