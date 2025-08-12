@@ -12,7 +12,6 @@ import net.minecraft.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 
-import static avox.openutils.modules.stock.StockModule.getItemName;
 import static avox.openutils.modules.stock.screen.FilterManager.*;
 
 public class ListWidget extends ElementListWidget<ListWidget.Entry> {
@@ -29,7 +28,7 @@ public class ListWidget extends ElementListWidget<ListWidget.Entry> {
         clearEntries();
 
         for (StockItem stockItem : sortItems(filterItems())) {
-            addEntry(new Entry(stockItem));
+            addEntry(new Entry(this, stockItem));
         }
     }
 
@@ -44,14 +43,14 @@ public class ListWidget extends ElementListWidget<ListWidget.Entry> {
     }
 
     public class Entry extends ElementListWidget.Entry<Entry> {
+        public ListWidget listWidget;
         public StockItem stockItem;
-        public Text text;
         public Text info;
         public int infoWidth;
 
-        public Entry(StockItem stockItem) {
+        public Entry(ListWidget listWidget, StockItem stockItem) {
+            this.listWidget = listWidget;
             this.stockItem = stockItem;
-            this.text = getItemName(stockItem.itemStack);
             this.info = getInfoText(stockItem);
             this.infoWidth = textRenderer.getWidth(this.info);
         }
@@ -71,12 +70,19 @@ public class ListWidget extends ElementListWidget<ListWidget.Entry> {
             context.fill(x, y, x + entryWidth - 12, y + 20, 0x80000000);
             context.drawItem(stockItem.itemStack, 15, y + 2);
             int textY = y + 10 - textRenderer.fontHeight / 2;
-            context.drawText(textRenderer, text, 35, textY, 0xFFFFFFFF, true);
+            context.drawText(textRenderer, stockItem.name, 35, textY, 0xFFFFFFFF, true);
             context.drawText(textRenderer, info, x + entryWidth - infoWidth - 20, textY, 0xFFFFFFFF, true);
 
             if (!stockScreen.dropsDownsHovered() && hovered) {
                 context.drawItemTooltip(textRenderer, stockItem.itemStack, mouseX, mouseY);
             }
         }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+
     }
 }

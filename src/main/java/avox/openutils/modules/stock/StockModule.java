@@ -4,6 +4,7 @@ import avox.openutils.Module;
 import avox.openutils.modules.stock.screen.StockScreen;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
+import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -29,7 +30,10 @@ import static avox.openutils.OpenUtils.*;
 public class StockModule extends Module<StockModule.Config> {
     public static final StockModule INSTANCE = new StockModule(MinecraftClient.getInstance());
 
-    public static class Config extends ModuleConfig { }
+    public static class Config extends ModuleConfig {
+        @SerialEntry
+        public boolean standardEmpty = true;
+    }
     public static boolean screenOpen = false;
     public static final List<Integer> itemSlots = List.of(
         10, 11, 12, 13, 14, 15, 16,
@@ -62,7 +66,6 @@ public class StockModule extends Module<StockModule.Config> {
     public void tick(MinecraftClient client) {
         if (waitingForLoad && client.currentScreen instanceof HandledScreen) {
             ScreenHandler screen = ((HandledScreen<?>) client.currentScreen).getScreenHandler();
-            // Makes sure the server has updated
             int thisPage = getCurrentPage(screen.getSlot(44).getStack());
             if (thisPage == page + 1 || thisPage == -1) {
                 foundWaiting.run();
@@ -97,7 +100,9 @@ public class StockModule extends Module<StockModule.Config> {
             waitingForLoad = false;
             for (int i : itemSlots) {
                 if (screen.getSlot(i).hasStack()) {
-                    stockItems.add(new StockItem(screen.getSlot(i).getStack()));
+                    if (!stockItems.contains(new StockItem(screen.getSlot(i).getStack()))) {
+                        stockItems.add(new StockItem(screen.getSlot(i).getStack()));
+                    }
                 }
             }
 
@@ -156,6 +161,10 @@ public class StockModule extends Module<StockModule.Config> {
         return Config.class;
     }
 
+    public Config getConfig() {
+        return config;
+    }
+
     @Override
     public void loadConfig(ConfigCategory.Builder category) {
         category.group(OptionGroup.createBuilder()
@@ -164,6 +173,12 @@ public class StockModule extends Module<StockModule.Config> {
                         .name(Text.of("Använd Modul"))
                         .description(OptionDescription.of(Text.of("Slå på eller av tydligare stock skärmar.")))
                         .binding(true, () -> config.moduleEnabled, val -> config.moduleEnabled = val)
+                        .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
+                        .build())
+                .option(Option.<Boolean>createBuilder()
+                        .name(Text.of("Endast Tomma Standard"))
+                        .description(OptionDescription.of(Text.of("Om du vill ha endast tomma som standard.")))
+                        .binding(true, () -> config.standardEmpty, val -> config.standardEmpty = val)
                         .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
                         .build())
 

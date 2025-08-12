@@ -40,7 +40,7 @@ public class StockScreen extends Screen {
         }).dimensions(10, client.getWindow().getScaledHeight() - 25, 100, 20).build());
 
         int width = client.getWindow().getScaledWidth();
-        this.filterWidget = new SelectWidget(client, this, "Filtrering", false, FilterTabs.FILTER, (width - 20) / 3, 65, 5, 5);
+        this.filterWidget = new SelectWidget(client, this, "Filtrering", false, FilterTabs.getFilter(), (width - 20) / 3, 65, 5, 5);
         this.itemFilterWidget = new SelectWidget(client, this, "Item Filtrering", true, FilterTabs.ITEM_FILTER, (width - 20) / 3, 85, 5 + (width - 20) / 3 + 5, 5);
         this.sortingWidget = new SelectWidget(client, this, "Sortering", false, FilterTabs.SORTING, (width - 20) / 3, 85, width - 5 - (width - 20) / 3, 5);
 
@@ -66,6 +66,11 @@ public class StockScreen extends Screen {
         for (SelectWidget widget : getSelectWidgets()) {
             widget.render(context, mouseX, mouseY, deltaTicks);
         }
+    }
+
+    @Override
+    public void close() {
+        super.close();
     }
 
     @Override

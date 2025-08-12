@@ -1,13 +1,17 @@
 package avox.openutils.modules.stock.screen;
 
+import avox.openutils.modules.stock.StockModule;
+
 import java.util.LinkedHashMap;
 
 public class FilterTabs {
-    public static final LinkedHashMap<String, Boolean> FILTER = createOrdered(
-            "Alla", true,
-            "Tomma", false,
+    public static final LinkedHashMap<String, Boolean> getFilter() {
+        return createOrdered(
+            "Alla", !StockModule.INSTANCE.getConfig().standardEmpty,
+            "Tomma", StockModule.INSTANCE.getConfig().standardEmpty,
             "I Lager", false
-    );
+        );
+    }
 
     public static final LinkedHashMap<String, Boolean> ITEM_FILTER = createOrdered(
             "Böcker", true,

@@ -10,8 +10,11 @@ import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static avox.openutils.modules.stock.StockModule.getItemName;
+
 public class StockItem {
     public ItemStack itemStack;
+    public Text name;
     public int storage; // I lager
     public Vec3d position;
     public LocalDate created;
@@ -57,5 +60,22 @@ public class StockItem {
                 }
             }
         }
+        name = getItemName(itemStack);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        StockItem other = (StockItem) obj;
+        if (this.itemStack == null || other.itemStack == null) return false;
+
+        return this.name.equals(other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return itemStack != null ? name.hashCode() : 0;
     }
 }
