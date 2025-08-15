@@ -68,13 +68,13 @@ public class ListWidget extends ElementListWidget<ListWidget.Entry> {
         @Override
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             context.fill(x, y, x + entryWidth - 12, y + 20, 0x80000000);
-            context.drawItem(stockItem.itemStack, 15, y + 2);
+            context.drawItem(stockItem.itemStack.visualStack, 15, y + 2);
             int textY = y + 10 - textRenderer.fontHeight / 2;
             context.drawText(textRenderer, stockItem.name, 35, textY, 0xFFFFFFFF, true);
             context.drawText(textRenderer, info, x + entryWidth - infoWidth - 20, textY, 0xFFFFFFFF, true);
 
             if (!stockScreen.dropsDownsHovered() && hovered) {
-                context.drawItemTooltip(textRenderer, stockItem.itemStack, mouseX, mouseY);
+                context.drawItemTooltip(textRenderer, stockItem.itemStack.visualStack, mouseX, mouseY);
             }
         }
 

@@ -30,29 +30,29 @@ public class FilterManager {
 
         if (itemFilterOptions.getOrDefault("Böcker", false)) {
             finalFilteredItems.addAll(filteredItems.stream()
-                    .filter(item -> item.itemStack.getItem() == Items.ENCHANTED_BOOK)
+                    .filter(item -> item.itemStack.item == Items.ENCHANTED_BOOK)
                     .toList());
         }
 
         if (itemFilterOptions.getOrDefault("Trims", false)) {
             finalFilteredItems.addAll(filteredItems.stream()
-                    .filter(item -> item.itemStack.getItem() instanceof SmithingTemplateItem)
+                    .filter(item -> item.itemStack.item instanceof SmithingTemplateItem)
                     .toList());
         }
 
         if (itemFilterOptions.getOrDefault("Potions", false)) {
             finalFilteredItems.addAll(filteredItems.stream()
                     .filter(item -> List.of(Items.POTION, Items.LINGERING_POTION, Items.SPLASH_POTION)
-                            .contains(item.itemStack.getItem()))
+                            .contains(item.itemStack.item))
                     .toList());
         }
 
         if (itemFilterOptions.getOrDefault("Annat", false)) {
             finalFilteredItems.addAll(filteredItems.stream()
                     .filter(item ->
-                            item.itemStack.getItem() != Items.ENCHANTED_BOOK &&
-                                    !(item.itemStack.getItem() instanceof SmithingTemplateItem) &&
-                                    !List.of(Items.POTION, Items.LINGERING_POTION, Items.SPLASH_POTION).contains(item.itemStack.getItem())
+                            item.itemStack.item != Items.ENCHANTED_BOOK &&
+                                    !(item.itemStack.item instanceof SmithingTemplateItem) &&
+                                    !List.of(Items.POTION, Items.LINGERING_POTION, Items.SPLASH_POTION).contains(item.itemStack.item)
                     )
                     .toList());
         }

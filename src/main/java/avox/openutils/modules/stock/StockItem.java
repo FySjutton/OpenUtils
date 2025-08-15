@@ -1,5 +1,6 @@
 package avox.openutils.modules.stock;
 
+import avox.openutils.OpenItemStack;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.ItemStack;
@@ -10,10 +11,8 @@ import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static avox.openutils.modules.stock.StockModule.getItemName;
-
 public class StockItem {
-    public ItemStack itemStack;
+    public OpenItemStack itemStack;
     public Text name;
     public int storage; // I lager
     public Vec3d position;
@@ -23,7 +22,7 @@ public class StockItem {
     public int earned;
 
     public StockItem(ItemStack stack) {
-        itemStack = stack;
+        itemStack = new OpenItemStack(stack, false);
         LoreComponent lore = stack.get(DataComponentTypes.LORE);
         if (lore == null) return;
         for (Text line : lore.lines()) {
@@ -60,7 +59,7 @@ public class StockItem {
                 }
             }
         }
-        name = getItemName(itemStack);
+        name = itemStack.getItemName();
     }
 
     @Override
@@ -71,11 +70,11 @@ public class StockItem {
         StockItem other = (StockItem) obj;
         if (this.itemStack == null || other.itemStack == null) return false;
 
-        return this.name.equals(other.name);
+        return this.itemStack.equals(other.itemStack);
     }
 
     @Override
     public int hashCode() {
-        return itemStack != null ? name.hashCode() : 0;
+        return itemStack != null ? itemStack.hashCode() : 0;
     }
 }

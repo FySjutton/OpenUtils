@@ -69,14 +69,17 @@ public class SubserverManager {
                 setSubServer(Subserver.PARKOUR);
             } else if (lineContent.contains("Event")) {
                 setSubServer(Subserver.EVENT);
-            } else if (lineContent.contains("Survival")) {
-                if (lineContent.contains("Ägare")) {
-                    setSubServer(Subserver.SURVIVAL_PLOT);
-                } else {
-                    if (client.player == null) {
-                        updateListeners();
-                        return;
+            } else if (lineContent.contains("Survival") && !lineContent.contains("Survival Games")) {
+                boolean found = false;
+                for (ScoreboardEntry subEntry : entries) {
+                    String subLineContent = Team.decorateName(scoreboard.getScoreHolderTeam(subEntry.owner()), subEntry.name()).getString();
+                    if (subLineContent.contains("Ägare")) {
+                        setSubServer(Subserver.SURVIVAL_PLOT);
+                        found = true;
+                        break;
                     }
+                }
+                if (!found && client.player != null) {
                     setSubServer(client.player.getGameMode() == GameMode.ADVENTURE ? Subserver.SURVIVAL_SPAWN : Subserver.SURVIVAL_RESOURCE);
                 }
             }

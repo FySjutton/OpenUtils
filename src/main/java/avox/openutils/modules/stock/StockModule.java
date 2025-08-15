@@ -136,26 +136,6 @@ public class StockModule extends Module<StockModule.Config> {
         return -1;
     }
 
-    public static Text getItemName(ItemStack stack) {
-        Item item = stack.getItem();
-        Text text;
-
-        if (item.equals(Items.ENCHANTED_BOOK)) {
-            ItemEnchantmentsComponent enchants = stack.get(DataComponentTypes.STORED_ENCHANTMENTS);
-            if (enchants != null && !enchants.isEmpty()) {
-                int level = enchants.getEnchantmentEntries().stream().toList().getFirst().getIntValue();
-                Enchantment value = enchants.getEnchantments().stream().toList().getFirst().value();
-
-                text = Text.literal(value.description().getString()).append(" " + level);
-            } else {
-                text = stack.getName();
-            }
-        } else {
-            text = stack.getName();
-        }
-        return text;
-    }
-
     @Override
     protected Class<Config> getConfigClass() {
         return Config.class;
