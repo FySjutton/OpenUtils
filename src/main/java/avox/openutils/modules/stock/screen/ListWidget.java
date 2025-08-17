@@ -21,15 +21,17 @@ public class ListWidget extends ElementListWidget<ListWidget.Entry> {
     public ListWidget(StockScreen stockScreen, int width, int height) {
         super(MinecraftClient.getInstance(), width, height - 32 - 32, 32, 24);
         this.stockScreen = stockScreen;
-        refreshEntries();
+        refreshEntries("");
     }
 
-    public void refreshEntries() {
+    public void refreshEntries(String search) {
         clearEntries();
 
-        for (StockItem stockItem : sortItems(filterItems())) {
+        List<StockItem> entries = sortItems(filterItems(search));
+        for (StockItem stockItem : entries) {
             addEntry(new Entry(this, stockItem));
         }
+        stockScreen.suggestionsFound = !entries.isEmpty();
     }
 
     @Override
@@ -39,7 +41,12 @@ public class ListWidget extends ElementListWidget<ListWidget.Entry> {
 
     @Override
     public int getRowWidth() {
-        return width - 15;
+        return width - (overflows() ? 15 : 0);
+    }
+
+    @Override
+    public int getRowLeft() {
+        return 7;
     }
 
     public class Entry extends ElementListWidget.Entry<Entry> {
@@ -68,9 +75,9 @@ public class ListWidget extends ElementListWidget<ListWidget.Entry> {
         @Override
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             context.fill(x, y, x + entryWidth - 12, y + 20, 0x80000000);
-            context.drawItem(stockItem.itemStack.visualStack, 15, y + 2);
+            context.drawItem(stockItem.itemStack.visualStack, 12, y + 2);
             int textY = y + 10 - textRenderer.fontHeight / 2;
-            context.drawText(textRenderer, stockItem.name, 35, textY, 0xFFFFFFFF, true);
+            context.drawText(textRenderer, stockItem.name, 33, textY, 0xFFFFFFFF, true);
             context.drawText(textRenderer, info, x + entryWidth - infoWidth - 20, textY, 0xFFFFFFFF, true);
 
             if (!stockScreen.dropsDownsHovered() && hovered) {
@@ -82,7 +89,5 @@ public class ListWidget extends ElementListWidget<ListWidget.Entry> {
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             return super.mouseClicked(mouseX, mouseY, button);
         }
-
-
     }
 }

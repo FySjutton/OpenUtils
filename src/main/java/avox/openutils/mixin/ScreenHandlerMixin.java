@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ScreenHandler.class)
 public abstract class ScreenHandlerMixin {
-
     @Inject(method = "onClosed", at = @At("HEAD"))
     private void onClosed(PlayerEntity player, CallbackInfo ci) {
         StockModule.screenOpen = false;

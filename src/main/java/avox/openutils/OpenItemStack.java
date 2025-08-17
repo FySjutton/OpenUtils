@@ -1,7 +1,9 @@
 package avox.openutils;
 
+import avox.openutils.modules.stats.FormatTools;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FireworksComponent;
+import net.minecraft.component.type.InstrumentComponent;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.enchantment.Enchantment;
@@ -9,6 +11,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +22,7 @@ public class OpenItemStack {
     public ItemEnchantmentsComponent enchantments;
     public PotionContentsComponent potions;
     public FireworksComponent fireworks;
+    public InstrumentComponent instrument;
     public ItemStack visualStack;
     public boolean finishedMarked;
 
@@ -30,6 +34,7 @@ public class OpenItemStack {
         }
         potions = itemStack.getComponents().get(DataComponentTypes.POTION_CONTENTS);
         fireworks = itemStack.getComponents().get(DataComponentTypes.FIREWORKS);
+        instrument = itemStack.getComponents().get(DataComponentTypes.INSTRUMENT);
 
         visualStack = itemStack;
         this.finishedMarked = finishedMarked;
@@ -41,10 +46,11 @@ public class OpenItemStack {
         if (item.equals(Items.ENCHANTED_BOOK)) {
             int level = enchantments.getEnchantmentEntries().stream().toList().getFirst().getIntValue();
             Enchantment value = enchantments.getEnchantments().stream().toList().getFirst().value();
-
             text = Text.literal(value.description().getString()).append(" " + level);
         } else if (item.equals(Items.FIREWORK_ROCKET)) {
             text = visualStack.getName().copy().append(" Tier " + fireworks.flightDuration());
+        } else if (item.equals(Items.GOAT_HORN)) {
+            text = Text.of(FormatTools.toTitleCase((instrument.instrument().getKey().get().getValue().toString().split(":")[1].replaceAll("_", " "))));
         } else {
             text = visualStack.getName();
         }
@@ -71,11 +77,14 @@ public class OpenItemStack {
         boolean fireworkEqual = (this.fireworks == null && that.fireworks == null) ||
                 (this.fireworks != null && this.fireworks.equals(that.fireworks));
 
-        return item.equals(that.item) && enchantmentsEqual && potionsEqual && fireworkEqual;
+        boolean instrumentEqual = (this.instrument == null && that.instrument == null) ||
+                (this.instrument != null && this.instrument.equals(that.instrument));
+
+        return item.equals(that.item) && enchantmentsEqual && potionsEqual && fireworkEqual && instrumentEqual;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(item, enchantments, potions, fireworks);
+        return Objects.hash(item, enchantments, potions, fireworks, instrument);
     }
 }

@@ -3,10 +3,12 @@ package avox.openutils.modules.stock.screen;
 import avox.openutils.modules.stock.StockModule;
 import avox.openutils.modules.stock.screen.selectWidget.SelectWidget;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -15,13 +17,16 @@ import java.util.List;
 public class StockScreen extends Screen {
     private final MinecraftClient client;
     private final boolean guildScreen;
-    private ListWidget listWidget;
+    private String search = "";
+    public boolean suggestionsFound = false;
 
+    private ListWidget listWidget;
     private SelectWidget filterWidget;
     private SelectWidget itemFilterWidget;
     private SelectWidget sortingWidget;
 
     public static HashMap<String, LinkedHashMap<String, Boolean>> options = new HashMap<>();
+    private final Identifier SEARCH_ICON = Identifier.ofVanilla("icon/search");
 
     public StockScreen(boolean guildScreen) {
         super(Text.of("Stock Screen"));
@@ -32,12 +37,18 @@ public class StockScreen extends Screen {
 
     @Override
     protected void init() {
+        int y = client.getWindow().getScaledHeight() - 25;
         addDrawableChild(ButtonWidget.builder(Text.of("Öppna vanliga"), btn -> {
             if (client.getNetworkHandler() == null) return;
             StockModule.ignoreNextScreen = true;
             close();
             client.getNetworkHandler().sendChatCommand(guildScreen ? "stock guild" : "stock player");
-        }).dimensions(10, client.getWindow().getScaledHeight() - 25, 100, 20).build());
+        }).dimensions(client.getWindow().getScaledWidth() - 110, y, 100, 20).build());
+
+        addDrawableChild(new SearchField(textRenderer, 25, y, client.getWindow().getScaledWidth() - 140, 20, (text) -> {
+            search = text;
+            filterChanged();
+        }));
 
         int width = client.getWindow().getScaledWidth();
         this.filterWidget = new SelectWidget(client, this, "Filtrering", false, FilterTabs.getFilter(), (width - 20) / 3, 65, 5, 5);
@@ -49,7 +60,7 @@ public class StockScreen extends Screen {
     }
 
     public void filterChanged() {
-        listWidget.refreshEntries();
+        listWidget.refreshEntries(search.toLowerCase());
     }
 
     public boolean dropsDownsHovered() {
@@ -65,6 +76,10 @@ public class StockScreen extends Screen {
         super.render(context, mouseX, mouseY, deltaTicks);
         for (SelectWidget widget : getSelectWidgets()) {
             widget.render(context, mouseX, mouseY, deltaTicks);
+        }
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, SEARCH_ICON, 7, client.getWindow().getScaledHeight() - 20, 12, 12);
+        if (!suggestionsFound) {
+            context.drawCenteredTextWithShadow(textRenderer, "§7Inga item hittades!", client.getWindow().getScaledWidth() / 2, 45, 0xFFFFFFFF);
         }
     }
 

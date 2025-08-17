@@ -13,7 +13,6 @@ import static avox.openutils.modules.quests.QuestManager.newActionBar;
 
 @Mixin(InGameHud.class)
 public abstract class InGameHudMixin {
-    // Quests module feature:
     @Inject(method = "setOverlayMessage", at = @At("HEAD"))
     private void onSetOverlayMessage(Text message, boolean tinted, CallbackInfo ci) {
         if (QuestModule.INSTANCE.getConfig().moduleEnabled && playerInSurvival()) {

@@ -16,7 +16,6 @@ import static avox.openutils.modules.quests.QuestModule.QUEST_TITLE;
 
 @Mixin(HandledScreen.class)
 public abstract class HandledScreenMixin {
-    // Quests module feature:
     @Inject(method = "mouseClicked", at = @At("HEAD"))
     private void mouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         MinecraftClient client = MinecraftClient.getInstance();

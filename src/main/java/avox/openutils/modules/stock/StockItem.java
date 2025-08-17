@@ -20,18 +20,20 @@ public class StockItem {
     public int bought;
     public int transactions;
     public int earned;
+    public boolean inStock;
 
-    public StockItem(ItemStack stack) {
+    public StockItem(ItemStack stack, boolean inStock) {
         itemStack = new OpenItemStack(stack, false);
+        this.inStock = inStock;
         LoreComponent lore = stack.get(DataComponentTypes.LORE);
         if (lore == null) return;
         for (Text line : lore.lines()) {
             String text = line.getString().trim();
             if (text.isEmpty()) continue;
 
-            Matcher storageMatcher = Pattern.compile("Lager: (\\d+) st").matcher(text);
+            Matcher storageMatcher = Pattern.compile("Lager: ([\\d ]+) st").matcher(text);
             if (storageMatcher.find()) {
-                storage = Integer.parseInt(storageMatcher.group(1));
+                storage = getInteger(storageMatcher.group(1));
             } else {
                 Matcher positionMatcher = Pattern.compile("Position: (-*\\d+), (-*\\d+), (-*\\d+)").matcher(text);
                 if (positionMatcher.find()) {
@@ -41,17 +43,17 @@ public class StockItem {
                     if (createdMatcher.find()) {
                         created = LocalDate.parse(createdMatcher.group(1));
                     } else {
-                        Matcher boughtMatcher = Pattern.compile("Antal köpta: (\\d+) st").matcher(text);
+                        Matcher boughtMatcher = Pattern.compile("Antal köpta: ([\\d ]+) st").matcher(text);
                         if (boughtMatcher.find()) {
-                            bought = Integer.parseInt(boughtMatcher.group(1));
+                            bought = getInteger(boughtMatcher.group(1));
                         } else {
-                            Matcher transactionsMatcher = Pattern.compile("Antal transaktioner: (\\d+) st").matcher(text);
+                            Matcher transactionsMatcher = Pattern.compile("Antal transaktioner: ([\\d ]+) st").matcher(text);
                             if (transactionsMatcher.find()) {
-                                transactions = Integer.parseInt(transactionsMatcher.group(1));
+                                transactions = getInteger(transactionsMatcher.group(1));
                             } else {
-                                Matcher earnedMatcher = Pattern.compile("Tjänat: (\\d+) kr").matcher(text);
+                                Matcher earnedMatcher = Pattern.compile("Tjänat: ([\\d ]+) kr").matcher(text);
                                 if (earnedMatcher.find()) {
-                                    earned = Integer.parseInt(earnedMatcher.group(1));
+                                    earned = getInteger(earnedMatcher.group(1));
                                 }
                             }
                         }
@@ -60,6 +62,10 @@ public class StockItem {
             }
         }
         name = itemStack.getItemName();
+    }
+
+    private int getInteger(String value) {
+        return Integer.parseInt(value.replaceAll(" ", ""));
     }
 
     @Override

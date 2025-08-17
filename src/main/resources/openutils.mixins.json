@@ -13,7 +13,8 @@
     "ClientPlayNetworkHandlerMixin",
     "GenericContainerScreenMixin",
     "HandledScreenMixin",
-    "InGameHudMixin"
+    "InGameHudMixin",
+    "SoundSystemMixin"
   ],
   "mixins": [
     "ScreenHandlerMixin"

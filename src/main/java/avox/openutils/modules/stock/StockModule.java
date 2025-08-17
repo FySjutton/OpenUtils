@@ -5,14 +5,12 @@ import avox.openutils.modules.stock.screen.StockScreen;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.component.type.LoreComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandler;
@@ -44,10 +42,14 @@ public class StockModule extends Module<StockModule.Config> {
 
     private boolean waitingForLoad;
     private Runnable foundWaiting;
-    private final Pattern pagePattern = Pattern.compile("Sida (\\d+)/\\d+");
+    private SlotWaitCondition waitCondition;
+
+    private final Pattern pagePattern = Pattern.compile("Sida (\\d+)/(\\d+)");
     private int page;
+    private boolean inStockPage;
 
     public static final ArrayList<StockItem> stockItems = new ArrayList<>();
+    public static boolean muteSounds = false;
 
     private StockModule(MinecraftClient client) {
         super("stock", 4, Config.class);
@@ -65,9 +67,7 @@ public class StockModule extends Module<StockModule.Config> {
     @Override
     public void tick(MinecraftClient client) {
         if (waitingForLoad && client.currentScreen instanceof HandledScreen) {
-            ScreenHandler screen = ((HandledScreen<?>) client.currentScreen).getScreenHandler();
-            int thisPage = getCurrentPage(screen.getSlot(44).getStack());
-            if (thisPage == page + 1 || thisPage == -1) {
+            if (waitCondition != null && waitCondition.check()) {
                 foundWaiting.run();
             }
         }
@@ -79,46 +79,102 @@ public class StockModule extends Module<StockModule.Config> {
                         screenOpen = true;
                         ScreenHandler screen = ((HandledScreen<?>) client.currentScreen).getScreenHandler();
                         stockItems.clear();
-                        processGuildScreen(client, screen, client.currentScreen.getTitle().getString().equals("Guild-affärer"));
+                        processStockScreen(client, screen, client.currentScreen.getTitle().getString().equals("Guild-affärer"));
                     }
                 }
             }
         }
     }
 
-    private void processGuildScreen(MinecraftClient client, ScreenHandler screen, boolean guildScreen) {
-        page = 1;
-        loadPage(client, screen, () -> {
-            client.setScreen(null);
-            client.setScreen(new StockScreen(guildScreen));
+    private void processStockScreen(MinecraftClient client, ScreenHandler screen, boolean guildScreen) {
+        muteSounds = true;
+        switchMode(client, screen, true, () -> {
+            page = 1;
+            loadPages(client, screen, () -> switchMode(client, screen, false, () -> {
+                page = 1;
+                loadPages(client, screen, () -> {
+                    muteSounds = false;
+                    client.setScreen(null);
+                    client.setScreen(new StockScreen(guildScreen));
+                });
+            }));
         });
     }
 
-    private void loadPage(MinecraftClient client, ScreenHandler screen, Runnable onComplete) {
+    private void loadPages(MinecraftClient client, ScreenHandler screen, Runnable onComplete) {
+        int pages = 1;
+        ItemStack stack = screen.getSlot(44).getStack();
+        if (stack.getItem() == Items.ARROW) {
+            LoreComponent lore = stack.getComponents().get(DataComponentTypes.LORE);
+            if (lore != null) {
+                Matcher matcher = pagePattern.matcher(lore.lines().getFirst().getString());
+                if (matcher.matches()) {
+                    pages = Integer.parseInt(matcher.group(2));
+                }
+            }
+        }
+
+        page = 1;
+        loadNextPage(client, screen, pages, onComplete);
+    }
+
+    private void loadNextPage(MinecraftClient client, ScreenHandler screen, int totalPages, Runnable onComplete) {
         waitingForLoad = true;
+        waitCondition = () -> {
+            int thisPage = getCurrentPage(screen.getSlot(44).getStack());
+            return (thisPage == page + 1 || thisPage == -1);
+        };
         foundWaiting = () -> {
             waitingForLoad = false;
+
             for (int i : itemSlots) {
                 if (screen.getSlot(i).hasStack()) {
-                    if (!stockItems.contains(new StockItem(screen.getSlot(i).getStack()))) {
-                        stockItems.add(new StockItem(screen.getSlot(i).getStack()));
+                    StockItem item = new StockItem(screen.getSlot(i).getStack(), inStockPage);
+                    if (!stockItems.contains(item)) {
+                        stockItems.add(item);
                     }
                 }
             }
 
-            if (screen.getSlot(44).hasStack() && screen.getSlot(44).getStack().getItem() == Items.ARROW) {
-                page = getCurrentPage(screen.getSlot(44).getStack());
+            if (page < totalPages) {
                 client.interactionManager.clickSlot(
-                    client.player.currentScreenHandler.syncId,
-                    44, 0,
-                    SlotActionType.PICKUP,
-                    client.player
+                        client.player.currentScreenHandler.syncId,
+                        44, 0,
+                        SlotActionType.PICKUP,
+                        client.player
                 );
+                page++;
 
-                loadPage(client, screen, onComplete);
+                loadNextPage(client, screen, totalPages, onComplete);
             } else {
                 onComplete.run();
             }
+        };
+    }
+
+    private void switchMode(MinecraftClient client, ScreenHandler screen, boolean inStock, Runnable onComplete) {
+        inStockPage = inStock;
+
+        client.interactionManager.clickSlot(
+                client.player.currentScreenHandler.syncId,
+                42, 0,
+                SlotActionType.PICKUP,
+                client.player
+        );
+
+        waitingForLoad = true;
+        ItemStack oldStack = screen.getSlot(42).getStack().copy();
+
+        waitCondition = () -> {
+            ItemStack newStack = screen.getSlot(42).getStack();
+            LoreComponent oldLore = oldStack.getComponents().get(DataComponentTypes.LORE);
+            LoreComponent newLore = newStack.getComponents().get(DataComponentTypes.LORE);
+            return newLore != null && (!newLore.equals(oldLore));
+        };
+
+        foundWaiting = () -> {
+            waitingForLoad = false;
+            onComplete.run();
         };
     }
 
@@ -163,5 +219,9 @@ public class StockModule extends Module<StockModule.Config> {
                         .build())
 
                 .build());
+    }
+
+    public interface SlotWaitCondition {
+        boolean check();
     }
 }

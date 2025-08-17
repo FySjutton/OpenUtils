@@ -1,5 +1,6 @@
 package avox.openutils.modules.stock.screen;
 
+import avox.openutils.modules.stats.FormatTools;
 import avox.openutils.modules.stock.StockItem;
 import net.minecraft.item.Items;
 import net.minecraft.item.SmithingTemplateItem;
@@ -13,15 +14,19 @@ import static avox.openutils.modules.stock.StockModule.stockItems;
 import static avox.openutils.modules.stock.screen.StockScreen.options;
 
 public class FilterManager {
-    public static List<StockItem> filterItems() {
+    public static List<StockItem> filterItems(String search) {
         HashMap<String, Boolean> filterOptions = options.get("Filtrering");
         List<StockItem> filteredItems;
-        if (filterOptions.get("I Lager")) {
-            filteredItems = stockItems.stream().filter(item -> item.storage > 0).toList();
-        } else if (filterOptions.get("Tomma")) {
-            filteredItems = stockItems.stream().filter(item -> item.storage <= 0).toList();
+        if (!search.isEmpty()) {
+            filteredItems = stockItems.stream().filter(item -> item.name.getString().toLowerCase().contains(search)).toList();
         } else {
             filteredItems = new ArrayList<>(stockItems);
+        }
+
+        if (filterOptions.get("I Lager")) {
+            filteredItems = filteredItems.stream().filter(item -> item.inStock).toList();
+        } else if (filterOptions.get("Tomma")) {
+            filteredItems = filteredItems.stream().filter(item -> !item.inStock).toList();
         }
 
         HashMap<String, Boolean> itemFilterOptions = options.get("Item Filtrering");
@@ -82,7 +87,7 @@ public class FilterManager {
         if (sortingOptions.get("Lager")) {
             return Text.of("§eLager:§f " + stockItem.storage + " st");
         } else if (sortingOptions.get("Tjänat")) {
-            return Text.of("§eTjänat:§f " + stockItem.earned + " kr");
+            return Text.of("§eTjänat:§f " + FormatTools.formatNumber(stockItem.earned) + " kr");
         } else if (sortingOptions.get("Flest Köpta")) {
             return Text.of("§eTotalt köpta:§f " + stockItem.bought + " st");
         } else if (sortingOptions.get("Flest Sålda")) {
