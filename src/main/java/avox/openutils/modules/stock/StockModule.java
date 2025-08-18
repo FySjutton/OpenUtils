@@ -104,15 +104,20 @@ public class StockModule extends Module<StockModule.Config> {
     private void loadPages(MinecraftClient client, ScreenHandler screen, Runnable onComplete) {
         int pages = 1;
         ItemStack stack = screen.getSlot(44).getStack();
+        LOGGER.info(screen.getSlot(42).getStack().getComponents().get(DataComponentTypes.LORE).toString());
+        LOGGER.info("SWITCH DONE; ITEM " + stack.getItem());
         if (stack.getItem() == Items.ARROW) {
             LoreComponent lore = stack.getComponents().get(DataComponentTypes.LORE);
             if (lore != null) {
                 Matcher matcher = pagePattern.matcher(lore.lines().getFirst().getString());
+                LOGGER.info(lore.lines().getFirst().getString());
                 if (matcher.matches()) {
+                    LOGGER.info("MATCHESSSSSSS!");
                     pages = Integer.parseInt(matcher.group(2));
                 }
             }
         }
+        LOGGER.info("total pages " + pages);
 
         page = 1;
         loadNextPage(client, screen, pages, onComplete);
@@ -127,6 +132,8 @@ public class StockModule extends Module<StockModule.Config> {
         foundWaiting = () -> {
             waitingForLoad = false;
 
+            LOGGER.info("Reading page");
+            LOGGER.info("slot 12" + screen.getSlot(12).getStack().getItem().toString());
             for (int i : itemSlots) {
                 if (screen.getSlot(i).hasStack()) {
                     StockItem item = new StockItem(screen.getSlot(i).getStack(), inStockPage);
@@ -137,6 +144,7 @@ public class StockModule extends Module<StockModule.Config> {
             }
 
             if (page < totalPages) {
+                LOGGER.info("going to next");
                 client.interactionManager.clickSlot(
                         client.player.currentScreenHandler.syncId,
                         44, 0,
@@ -174,8 +182,41 @@ public class StockModule extends Module<StockModule.Config> {
 
         foundWaiting = () -> {
             waitingForLoad = false;
-            onComplete.run();
+
+            goToFirstPage(client, screen, onComplete);
         };
+    }
+
+    private void goToFirstPage(MinecraftClient client, ScreenHandler screen, Runnable onComplete) {
+        ItemStack back = screen.getSlot(36).getStack();
+        if (back.getItem() == Items.ARROW) {
+            LoreComponent oldLore = back.getComponents().get(DataComponentTypes.LORE);
+
+            client.interactionManager.clickSlot(
+                    client.player.currentScreenHandler.syncId,
+                    36, 0,
+                    SlotActionType.PICKUP,
+                    client.player
+            );
+
+            waitingForLoad = true;
+            waitCondition = () -> {
+                ItemStack newBack = screen.getSlot(36).getStack();
+                LoreComponent newLore = newBack.getComponents().get(DataComponentTypes.LORE);
+                return (newLore != null && !newLore.equals(oldLore)) || newBack.isEmpty();
+            };
+
+            foundWaiting = () -> {
+                waitingForLoad = false;
+                if (screen.getSlot(36).getStack().getItem() == Items.ARROW) {
+                    goToFirstPage(client, screen, onComplete);
+                } else {
+                    onComplete.run();
+                }
+            };
+        } else {
+            onComplete.run();
+        }
     }
 
     private int getCurrentPage(ItemStack stack) {
