@@ -104,20 +104,15 @@ public class StockModule extends Module<StockModule.Config> {
     private void loadPages(MinecraftClient client, ScreenHandler screen, Runnable onComplete) {
         int pages = 1;
         ItemStack stack = screen.getSlot(44).getStack();
-        LOGGER.info(screen.getSlot(42).getStack().getComponents().get(DataComponentTypes.LORE).toString());
-        LOGGER.info("SWITCH DONE; ITEM " + stack.getItem());
         if (stack.getItem() == Items.ARROW) {
             LoreComponent lore = stack.getComponents().get(DataComponentTypes.LORE);
             if (lore != null) {
                 Matcher matcher = pagePattern.matcher(lore.lines().getFirst().getString());
-                LOGGER.info(lore.lines().getFirst().getString());
                 if (matcher.matches()) {
-                    LOGGER.info("MATCHESSSSSSS!");
                     pages = Integer.parseInt(matcher.group(2));
                 }
             }
         }
-        LOGGER.info("total pages " + pages);
 
         page = 1;
         loadNextPage(client, screen, pages, onComplete);
@@ -132,8 +127,6 @@ public class StockModule extends Module<StockModule.Config> {
         foundWaiting = () -> {
             waitingForLoad = false;
 
-            LOGGER.info("Reading page");
-            LOGGER.info("slot 12" + screen.getSlot(12).getStack().getItem().toString());
             for (int i : itemSlots) {
                 if (screen.getSlot(i).hasStack()) {
                     StockItem item = new StockItem(screen.getSlot(i).getStack(), inStockPage);
@@ -144,7 +137,6 @@ public class StockModule extends Module<StockModule.Config> {
             }
 
             if (page < totalPages) {
-                LOGGER.info("going to next");
                 client.interactionManager.clickSlot(
                         client.player.currentScreenHandler.syncId,
                         44, 0,
@@ -183,7 +175,7 @@ public class StockModule extends Module<StockModule.Config> {
         foundWaiting = () -> {
             waitingForLoad = false;
 
-            goToFirstPage(client, screen, onComplete);
+            goToFirstPage(client, screen, () -> waitForForwardArrow(client, screen, () -> loadPages(client, screen, onComplete)));
         };
     }
 
@@ -217,6 +209,20 @@ public class StockModule extends Module<StockModule.Config> {
         } else {
             onComplete.run();
         }
+    }
+
+    private void waitForForwardArrow(MinecraftClient client, ScreenHandler screen, Runnable onReady) {
+        waitingForLoad = true;
+
+        waitCondition = () -> {
+            ItemStack forward = screen.getSlot(44).getStack();
+            return forward.isEmpty() || forward.getItem() == Items.ARROW;
+        };
+
+        foundWaiting = () -> {
+            waitingForLoad = false;
+            onReady.run();
+        };
     }
 
     private int getCurrentPage(ItemStack stack) {
