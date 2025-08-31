@@ -185,7 +185,7 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
         matrixStack.popMatrix();
     }
 
-    private static void renderTextureAtBlock(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, Identifier texture, Vec3d position) {
+    public static void renderTextureAtBlock(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, Identifier texture, Vec3d position) {
         matrices.push();
         matrices.translate(position.getX() - camPos.x, position.getY() + 1.1 - camPos.y, position.getZ() - camPos.z);
 
