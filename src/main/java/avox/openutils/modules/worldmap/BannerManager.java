@@ -7,18 +7,18 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.ArrayList;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.*;
+import net.minecraft.util.math.Vec3d;
 
 import static avox.openutils.OpenUtils.LOGGER;
+import static avox.openutils.modules.worldmap.WorldMapModule.originBottomLeftMap;
 
 public class BannerManager {
     public static volatile ArrayList<Banner> banners = new ArrayList<>();
     private static long lastFetchTime = 0;
     private static final long COOLDOWN = 10 * 60 * 1000;
-    private static final Gson gson = new Gson();
 
-    public record Banner(String map, int x, int y, String name) {}
+    public record Banner(String map, int x, int y, Vec3d worldmap_location, String name) {}
 
     public static void fetchBanners() {
         long now = System.currentTimeMillis();
@@ -38,10 +38,35 @@ public class BannerManager {
                         .build();
 
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                banners = gson.fromJson(response.body(), new TypeToken<ArrayList<Banner>>(){}.getType());
+
+                JsonArray arr = JsonParser.parseString(response.body()).getAsJsonArray();
+
+                ArrayList<Banner> parsed = new ArrayList<>();
+                for (JsonElement el : arr) {
+                    JsonObject obj = el.getAsJsonObject();
+
+                    String map = obj.get("map").getAsString();
+                    int x = obj.get("x").getAsInt();
+                    int y = obj.get("y").getAsInt();
+                    String name = obj.get("name").getAsString();
+
+                    Vec3d worldMapLocation = computeWorldMapLocation(map, x, y);
+
+                    parsed.add(new Banner(map, x, y, worldMapLocation, name));
+                }
+
+                banners = parsed;
             } catch (Exception e) {
                 LOGGER.info("[OpenUtils]: Failed to load /warp Worldmap banners! " + e.getMessage());
             }
         }, "BannerFetcherThread").start();
+    }
+
+    private static Vec3d computeWorldMapLocation(String map, int relative_x, int relative_y) {
+        String[] parts = map.split(",");
+        int x = Integer.parseInt(parts[0].trim());
+        int z = Integer.parseInt(parts[1].trim());
+
+        return new Vec3d(originBottomLeftMap.x + x + (relative_x + 128) / 255.0, 58, originBottomLeftMap.z - z + (relative_y + 128) / 255.0);
     }
 }

@@ -36,6 +36,7 @@ import java.util.List;
 
 import static avox.openutils.OpenUtils.LOGGER;
 import static avox.openutils.OpenUtils.playerInSurvival;
+import static avox.openutils.modules.worldmap.BannerManager.banners;
 
 public class WorldMapModule extends Module<WorldMapModule.Config> {
     public static final WorldMapModule INSTANCE = new WorldMapModule(MinecraftClient.getInstance());
@@ -65,7 +66,16 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                 MatrixStack matrixStack = context.matrixStack();
                 VertexConsumerProvider consumer = context.consumers();
                 if (matrixStack != null && consumer != null) {
-                    renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), Identifier.of("openutils", "textures/gui/map_pin.png"), arrow);
+                    renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 2, Identifier.of("openutils", "textures/gui/map_pin.png"), arrow, 128, 128);
+                }
+            }
+            if (config.moduleEnabled && withinArea) {
+                for (BannerManager.Banner banner : banners) {
+                    MatrixStack matrixStack = context.matrixStack();
+                    VertexConsumerProvider consumer = context.consumers();
+                    if (matrixStack != null && consumer != null && !banner.worldmap_location().equals(arrow)) {
+                        renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 0.75f, Identifier.of("openutils", "textures/gui/map_pin.png"), banner.worldmap_location(), 128, 128);
+                    }
                 }
             }
         });
@@ -185,21 +195,36 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
         matrixStack.popMatrix();
     }
 
-    public static void renderTextureAtBlock(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, Identifier texture, Vec3d position) {
+    public static void renderTextureAtBlock(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, float scale, Identifier texture, Vec3d position, int texWidth, int texHeight) {
         matrices.push();
-        matrices.translate(position.getX() - camPos.x, position.getY() + 1.1 - camPos.y, position.getZ() - camPos.z);
+
+        float aspect = (float) texHeight / (float) texWidth;
+
+        float heightWorld = aspect * scale;
+        float halfW = scale * 0.5f;
+        float halfH = heightWorld * 0.5f;
 
         float cameraYaw = MinecraftClient.getInstance().gameRenderer.getCamera().getYaw();
-        matrices.multiply(new Quaternionf().rotateY((float) Math.toRadians(-cameraYaw)));
-        matrices.scale(2, 2, 2);
+        double yawRad = Math.toRadians(cameraYaw);
+
+        Vec3d right = new Vec3d(Math.cos(yawRad), 0.0, Math.sin(yawRad)).normalize();
+        Vec3d up = new Vec3d(0.0, 1.0, 0.0);
+
+        Vec3d center = new Vec3d(position.getX(), position.getY() + halfH, position.getZ());
+
+        Vec3d topLeft  = center.subtract(right.multiply(halfW)).add(up.multiply(halfH));
+        Vec3d topRight = center.add(right.multiply(halfW)).add(up.multiply(halfH));
+        Vec3d botRight = center.add(right.multiply(halfW)).subtract(up.multiply(halfH));
+        Vec3d botLeft  = center.subtract(right.multiply(halfW)).subtract(up.multiply(halfH));
 
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         VertexConsumer buffer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(texture));
+        int light = 0xF000F0;
 
-        buffer.vertex(matrix, -0.5f, 0.5f, 0).color(255,255,255,255).texture(0f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0f, 1f, 0f);
-        buffer.vertex(matrix,  0.5f, 0.5f, 0).color(255,255,255,255).texture(1f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0f, 1f, 0f);
-        buffer.vertex(matrix,  0.5f,-0.5f, 0).color(255,255,255,255).texture(1f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0f, 1f, 0f);
-        buffer.vertex(matrix, -0.5f,-0.5f, 0).color(255,255,255,255).texture(0f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0f, 1f, 0f);
+        buffer.vertex(matrix, (float)(topLeft.x - camPos.x), (float)(topLeft.y - camPos.y), (float)(topLeft.z - camPos.z)).color(255,255,255,255).texture(0f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f,1f,0f);
+        buffer.vertex(matrix, (float)(topRight.x - camPos.x), (float)(topRight.y - camPos.y), (float)(topRight.z - camPos.z)).color(255,255,255,255).texture(1f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f,1f,0f);
+        buffer.vertex(matrix, (float)(botRight.x - camPos.x), (float)(botRight.y - camPos.y), (float)(botRight.z - camPos.z)).color(255,255,255,255).texture(1f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f,1f,0f);
+        buffer.vertex(matrix, (float)(botLeft.x - camPos.x), (float)(botLeft.y - camPos.y), (float)(botLeft.z - camPos.z)).color(255,255,255,255).texture(0f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f,1f,0f);
 
         matrices.pop();
     }

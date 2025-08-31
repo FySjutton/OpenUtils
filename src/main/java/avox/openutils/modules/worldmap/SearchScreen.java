@@ -195,12 +195,7 @@ public class SearchScreen extends Screen {
             List<BannerManager.Banner> banners = BannerManager.banners.stream().filter(b -> b.name().equals(bannerInput.getText())).toList();
             if (!banners.isEmpty()) {
                 try {
-                    BannerManager.Banner banner = banners.getFirst();
-                    String[] parts = banner.map().split(",");
-                    int x = Integer.parseInt(parts[0].trim());
-                    int z = Integer.parseInt(parts[1].trim());
-
-                    onComplete.accept(new Vec3d(originBottomLeftMap.x + x + (banner.x() + 128) / 255.0, 58, originBottomLeftMap.z - z + (banner.y() + 128) / 255.0));
+                    onComplete.accept(banners.getFirst().worldmap_location());
                 } catch (Exception e) {
                     addToast(client, "§cWorldMap Error!", "Okänt error!");
                 }
