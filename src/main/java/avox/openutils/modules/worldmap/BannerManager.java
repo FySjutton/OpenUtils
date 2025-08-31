@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 
 import com.google.gson.*;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.Vec3d;
 
 import static avox.openutils.OpenUtils.LOGGER;
@@ -18,7 +19,7 @@ public class BannerManager {
     private static long lastFetchTime = 0;
     private static final long COOLDOWN = 10 * 60 * 1000;
 
-    public record Banner(String map, int x, int y, Vec3d worldmap_location, String name) {}
+    public record Banner(String map, int x, int y, Vec3d worldmap_location, String name, DyeColor color) {}
 
     public static void fetchBanners() {
         long now = System.currentTimeMillis();
@@ -32,7 +33,8 @@ public class BannerManager {
                         .build();
 
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://openavox.se/getbanners"))
+//                        .uri(URI.create("https://openavox.se/getbanners"))
+                        .uri(URI.create("http://localhost:3000/getbanners"))
                         .timeout(Duration.ofSeconds(10))
                         .GET()
                         .build();
@@ -51,8 +53,21 @@ public class BannerManager {
                     String name = obj.get("name").getAsString();
 
                     Vec3d worldMapLocation = computeWorldMapLocation(map, x, y);
+                    DyeColor color;
+//                    LOGGER.info(obj.toString());
+                    try {
+                        if (obj.has("color")) {
+                            color = DyeColor.valueOf(obj.get("color").getAsString().toUpperCase());
+//                            LOGGER.info("here");
+//                            LOGGER.info(color.toString());
+                        } else {
+                            color = DyeColor.RED;
+                        }
+                    } catch (Exception e) {
+                        color = DyeColor.RED;
+                    }
 
-                    parsed.add(new Banner(map, x, y, worldMapLocation, name));
+                    parsed.add(new Banner(map, x, y, worldMapLocation, name, color));
                 }
 
                 banners = parsed;

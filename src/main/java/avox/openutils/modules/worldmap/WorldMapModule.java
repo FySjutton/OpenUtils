@@ -30,6 +30,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -74,7 +75,8 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                     MatrixStack matrixStack = context.matrixStack();
                     VertexConsumerProvider consumer = context.consumers();
                     if (matrixStack != null && consumer != null && !banner.worldmap_location().equals(arrow)) {
-                        renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 0.75f, Identifier.of("openutils", "textures/gui/map_pin.png"), banner.worldmap_location(), 128, 128);
+                        Identifier identifier = MapPinTextureManager.getPinTexture(new Color(banner.color().getSignColor()), banner.color().toString());
+                        renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 0.75f, identifier, banner.worldmap_location(), 128, 128);
                     }
                 }
             }
@@ -129,6 +131,9 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                         boolean fDown = InputUtil.isKeyPressed(client.getWindow().getHandle(), GLFW.GLFW_KEY_F);
 
                         if (ctrlDown && fDown) {
+                            BannerManager.fetchBanners();
+                            LOGGER.info(String.valueOf(MapPinTextureManager.cachedPins));
+                            MapPinTextureManager.cachedPins.clear(); // TESSSSSSSST
                             client.setScreen(new SearchScreen((location) -> arrow = location));
                         }
                     }
