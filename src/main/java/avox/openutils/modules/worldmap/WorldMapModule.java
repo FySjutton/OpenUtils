@@ -2,7 +2,6 @@ package avox.openutils.modules.worldmap;
 
 import avox.openutils.Module;
 import avox.openutils.SubserverManager;
-import avox.openutils.modules.stock.StockModule;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
@@ -11,7 +10,6 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
@@ -21,13 +19,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Position;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -35,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static avox.openutils.OpenUtils.LOGGER;
-import static avox.openutils.OpenUtils.playerInSurvival;
 import static avox.openutils.modules.worldmap.BannerManager.banners;
 
 public class WorldMapModule extends Module<WorldMapModule.Config> {
@@ -74,9 +67,9 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                 for (BannerManager.Banner banner : banners) {
                     MatrixStack matrixStack = context.matrixStack();
                     VertexConsumerProvider consumer = context.consumers();
-                    if (matrixStack != null && consumer != null && !banner.worldmap_location().equals(arrow)) {
-                        Identifier identifier = MapPinTextureManager.getPinTexture(new Color(banner.color().getSignColor()), banner.color().toString());
-                        renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 0.75f, identifier, banner.worldmap_location(), 128, 128);
+                    if (matrixStack != null && consumer != null && !banner.worldMapLocation().equals(arrow)) {
+                        Identifier texture = BannerManager.getBanner(banner.color());
+                        renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 0.75f, texture, banner.worldMapLocation(), 128, 128);
                     }
                 }
             }
@@ -131,9 +124,6 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                         boolean fDown = InputUtil.isKeyPressed(client.getWindow().getHandle(), GLFW.GLFW_KEY_F);
 
                         if (ctrlDown && fDown) {
-                            BannerManager.fetchBanners();
-                            LOGGER.info(String.valueOf(MapPinTextureManager.cachedPins));
-                            MapPinTextureManager.cachedPins.clear(); // TESSSSSSSST
                             client.setScreen(new SearchScreen((location) -> arrow = location));
                         }
                     }

@@ -195,7 +195,7 @@ public class SearchScreen extends Screen {
             List<BannerManager.Banner> banners = BannerManager.banners.stream().filter(b -> b.name().equals(bannerInput.getText())).toList();
             if (!banners.isEmpty()) {
                 try {
-                    onComplete.accept(banners.getFirst().worldmap_location());
+                    onComplete.accept(banners.getFirst().worldMapLocation());
                 } catch (Exception e) {
                     addToast(client, "§cWorldMap Error!", "Okänt error!");
                 }
