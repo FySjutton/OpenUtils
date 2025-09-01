@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
@@ -23,6 +24,7 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -64,14 +66,19 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                 }
             }
             if (config.moduleEnabled && withinArea) {
+                MatrixStack matrixStack = context.matrixStack();
+                VertexConsumerProvider consumer = context.consumers();
                 for (BannerManager.Banner banner : banners) {
-                    MatrixStack matrixStack = context.matrixStack();
-                    VertexConsumerProvider consumer = context.consumers();
                     if (matrixStack != null && consumer != null && !banner.worldMapLocation().equals(arrow)) {
                         Identifier texture = BannerManager.getBanner(banner.color());
                         renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 0.75f, texture, banner.worldMapLocation(), 128, 128);
+                        renderNameTag(matrixStack, consumer, context.camera().getPos(), banner.worldMapLocation().add(0, 2, 0), banner.name(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
+
                     }
                 }
+//                VertexConsumerProvider.Immediate immediate = MinecraftClient.getInstance()
+//                        .getBufferBuilders().getEntityVertexConsumers();
+//                immediate.draw();
             }
         });
 
@@ -223,6 +230,45 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
 
         matrices.pop();
     }
+
+    public static void renderNameTag(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, Vec3d position, String text, int light) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        TextRenderer textRenderer = client.textRenderer;
+
+        matrices.push();
+
+        // Flytta till position + offset ovanför pin
+//        float yOffset = pinHeight * pinScale + 0.1f; // liten extra offset
+        matrices.translate(position.x - camPos.x, position.y - camPos.y , position.z - camPos.z);
+
+        // Rotera så det “face:ar” kameran på XZ-plan (yaw only)
+        float cameraYaw = client.gameRenderer.getCamera().getYaw();
+        matrices.multiply(new Quaternionf().rotateY((float)Math.toRadians(-cameraYaw)));
+
+        // Skala text
+        float scale = 0.025f;
+        matrices.scale(-scale, -scale, scale);
+
+        // liten z-offset så det renderas ovanpå
+        matrices.translate(0, 0, 0.01f);
+
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+        float xOffset = -textRenderer.getWidth(text) / 2.0f;
+
+//        VertexConsumerProvider.Immediate immediate =
+//                MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
+
+        // Rita text
+        textRenderer.draw(Text.of(text), xOffset, 0, 0xFFFFFFFF, false, matrix, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0x80000000, light);
+        textRenderer.draw(text, xOffset, 0, -2130706433, false, matrix4f, vertexConsumers, bl ? TextRenderer.TextLayerType.SEE_THROUGH : TextRenderer.TextLayerType.NORMAL, j, light);
+        if (bl) {
+            textRenderer.draw(text, xOffset, (float)i, -1, false, matrix4f, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0, LightmapTextureManager.applyEmission(light, 2));
+        }
+
+        matrices.pop();
+    }
+
+
 
     @Override
     protected Class<Config> getConfigClass() {

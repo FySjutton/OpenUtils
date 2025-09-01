@@ -44,8 +44,8 @@ public class BannerManager {
                         .build();
 
                 HttpRequest request = HttpRequest.newBuilder()
-//                        .uri(URI.create("https://openavox.se/getbanners"))
-                        .uri(URI.create("http://localhost:3000/getbanners"))
+                        .uri(URI.create("https://openavox.se/getbanners"))
+//                        .uri(URI.create("http://localhost:3000/getbanners"))
                         .timeout(Duration.ofSeconds(10))
                         .GET()
                         .build();

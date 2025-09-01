@@ -1,5 +1,6 @@
 package avox.openutils.modules.worldmap;
 
+import avox.openutils.OpenUtils;
 import avox.openutils.modules.stats.screen.widgets.Suggestor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -122,12 +123,6 @@ public class SearchScreen extends Screen {
     }
 
     private void tabChanged(Tab pressed) {
-        if (pressed.equals(Tab.COORD)) {
-            coordSearch = getValue(widgetX, widgetZ);
-        } else if (pressed.equals(Tab.MAP)) {
-            mapSearch = getValue(widgetX, widgetZ);
-        }
-
         activeTab = pressed;
         coordTabBtn.active = !activeTab.equals(Tab.COORD);
         mapIdTabBtn.active = !activeTab.equals(Tab.MAP);
