@@ -2,11 +2,13 @@ package avox.openutils.modules.worldmap;
 
 import avox.openutils.Module;
 import avox.openutils.SubserverManager;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
@@ -14,6 +16,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
+import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -22,14 +25,12 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Matrix3x2fStack;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
+import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.lang.Math;
+import java.util.*;
 import java.util.List;
 
 import static avox.openutils.modules.worldmap.BannerManager.banners;
@@ -62,23 +63,49 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                 MatrixStack matrixStack = context.matrixStack();
                 VertexConsumerProvider consumer = context.consumers();
                 if (matrixStack != null && consumer != null) {
-                    renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 2, Identifier.of("openutils", "textures/gui/map_pin.png"), arrow, 128, 128);
+                    renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 2, Identifier.of("openutils", "textures/gui/map_pins/red.png"), arrow, 128, 128);
                 }
             }
             if (config.moduleEnabled && withinArea) {
                 MatrixStack matrixStack = context.matrixStack();
                 VertexConsumerProvider consumer = context.consumers();
-                for (BannerManager.Banner banner : banners) {
-                    if (matrixStack != null && consumer != null && !banner.worldMapLocation().equals(arrow)) {
-                        Identifier texture = BannerManager.getBanner(banner.color());
-                        renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 0.75f, texture, banner.worldMapLocation(), 128, 128);
-                        renderNameTag(matrixStack, consumer, context.camera().getPos(), banner.worldMapLocation().add(0, 2, 0), banner.name(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
 
+                BannerManager.Banner candidateBanner = null;
+                double closestCandidateDist = Double.MAX_VALUE;
+                float hidePinDistance = 1.5f;
+                float maxNameDistance = 10f;
+
+                Vec3d cameraPos = context.camera().getPos();
+                Vec3d lookEnd = cameraPos.add(client.player.getRotationVec(1.0f).normalize().multiply(maxNameDistance));
+
+                for (BannerManager.Banner banner : banners) {
+                    if (matrixStack == null || consumer == null || banner.worldMapLocation().equals(arrow)) continue;
+
+                    Vec3d bannerCenter = banner.worldMapLocation().add(0.0, 0.5, 0.0);
+                    double dist = cameraPos.distanceTo(bannerCenter);
+
+                    if (dist > hidePinDistance) {
+                        Identifier texture = BannerManager.getBanner(banner.color());
+                        renderTextureAtBlock(matrixStack, consumer, cameraPos, 0.75f, texture, banner.worldMapLocation(), 128, 128);
+                    }
+
+                    if (dist >= hidePinDistance && dist <= maxNameDistance) {
+                        Vec3d min = bannerCenter.subtract(0.5, 0.5, 0.5);
+                        Vec3d max = bannerCenter.add(0.5, 0.5, 0.5);
+
+                        if (rayIntersectsBox(cameraPos, lookEnd, min, max)) {
+                            if (dist < closestCandidateDist) {
+                                closestCandidateDist = dist;
+                                candidateBanner = banner;
+                            }
+                        }
                     }
                 }
-//                VertexConsumerProvider.Immediate immediate = MinecraftClient.getInstance()
-//                        .getBufferBuilders().getEntityVertexConsumers();
-//                immediate.draw();
+
+                if (candidateBanner != null) {
+                    Vec3d namePos = candidateBanner.worldMapLocation().add(0.0, 1.0, 0.0);
+                    renderNameTag(client, matrixStack, consumer, cameraPos, namePos, candidateBanner.name(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
+                }
             }
         });
 
@@ -92,6 +119,26 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
             dispatcher.register(mapidCommand);
             dispatcher.register(namespacedCommand);
         });
+    }
+
+    public boolean rayIntersectsBox(Vec3d start, Vec3d end, Vec3d min, Vec3d max) {
+        double tmin = (min.x - start.x) / (end.x - start.x);
+        double tmax = (max.x - start.x) / (end.x - start.x);
+        if (tmin > tmax) { double tmp = tmin; tmin = tmax; tmax = tmp; }
+
+        double tymin = (min.y - start.y) / (end.y - start.y);
+        double tymax = (max.y - start.y) / (end.y - start.y);
+        if (tymin > tymax) { double tmp = tymin; tymin = tymax; tymax = tmp; }
+
+        if ((tmin > tymax) || (tymin > tmax)) return false;
+        if (tymin > tmin) tmin = tymin;
+        if (tymax < tmax) tmax = tymax;
+
+        double tzmin = (min.z - start.z) / (end.z - start.z);
+        double tzmax = (max.z - start.z) / (end.z - start.z);
+        if (tzmin > tzmax) { double tmp = tzmin; tzmin = tzmax; tzmax = tmp; }
+
+        return !(tmin > tzmax || tzmin > tmax);
     }
 
     private int executeMapId(MinecraftClient client) {
@@ -231,44 +278,28 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
         matrices.pop();
     }
 
-    public static void renderNameTag(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, Vec3d position, String text, int light) {
-        MinecraftClient client = MinecraftClient.getInstance();
+    public static void renderNameTag(MinecraftClient client, MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, Vec3d position, String text, int light) {
         TextRenderer textRenderer = client.textRenderer;
+        if (client.player == null) return;
 
         matrices.push();
-
-        // Flytta till position + offset ovanför pin
-//        float yOffset = pinHeight * pinScale + 0.1f; // liten extra offset
         matrices.translate(position.x - camPos.x, position.y - camPos.y , position.z - camPos.z);
 
-        // Rotera så det “face:ar” kameran på XZ-plan (yaw only)
         float cameraYaw = client.gameRenderer.getCamera().getYaw();
         matrices.multiply(new Quaternionf().rotateY((float)Math.toRadians(-cameraYaw)));
 
-        // Skala text
         float scale = 0.025f;
         matrices.scale(-scale, -scale, scale);
 
-        // liten z-offset så det renderas ovanpå
-        matrices.translate(0, 0, 0.01f);
-
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         float xOffset = -textRenderer.getWidth(text) / 2.0f;
+        int backgroundColor = (int)(MinecraftClient.getInstance().options.getTextBackgroundOpacity(0.25F) * 255.0F) << 24;
 
-//        VertexConsumerProvider.Immediate immediate =
-//                MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
-
-        // Rita text
-        textRenderer.draw(Text.of(text), xOffset, 0, 0xFFFFFFFF, false, matrix, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0x80000000, light);
-        textRenderer.draw(text, xOffset, 0, -2130706433, false, matrix4f, vertexConsumers, bl ? TextRenderer.TextLayerType.SEE_THROUGH : TextRenderer.TextLayerType.NORMAL, j, light);
-        if (bl) {
-            textRenderer.draw(text, xOffset, (float)i, -1, false, matrix4f, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0, LightmapTextureManager.applyEmission(light, 2));
-        }
+        textRenderer.draw(text, xOffset, 0, -2130706433, false, matrix, vertexConsumers, TextRenderer.TextLayerType.SEE_THROUGH, backgroundColor, light);
+        textRenderer.draw(text, xOffset, 0, -1, false, matrix, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0, LightmapTextureManager.applyEmission(light, 2));
 
         matrices.pop();
     }
-
-
 
     @Override
     protected Class<Config> getConfigClass() {
