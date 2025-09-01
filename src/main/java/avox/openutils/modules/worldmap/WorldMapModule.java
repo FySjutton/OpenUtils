@@ -63,7 +63,7 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                 MatrixStack matrixStack = context.matrixStack();
                 VertexConsumerProvider consumer = context.consumers();
                 if (matrixStack != null && consumer != null) {
-                    renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 2, Identifier.of("openutils", "textures/gui/map_pins/red.png"), arrow, 128, 128);
+                    renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 2, Identifier.of("openutils", "textures/gui/map_pins/red.png"), arrow, 128, 128, false, 1);
                 }
             }
             if (config.moduleEnabled && withinArea) {
@@ -72,7 +72,7 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
 
                 BannerManager.Banner candidateBanner = null;
                 double closestCandidateDist = Double.MAX_VALUE;
-                float hidePinDistance = 1.5f;
+                float transparentDistance = 1.5f;
                 float maxNameDistance = 10f;
 
                 Vec3d cameraPos = context.camera().getPos();
@@ -84,12 +84,12 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                     Vec3d bannerCenter = banner.worldMapLocation().add(0.0, 0.5, 0.0);
                     double dist = cameraPos.distanceTo(bannerCenter);
 
-                    if (dist > hidePinDistance) {
-                        Identifier texture = BannerManager.getBanner(banner.color());
-                        renderTextureAtBlock(matrixStack, consumer, cameraPos, 0.75f, texture, banner.worldMapLocation(), 128, 128);
-                    }
+                    boolean semiTransparent = dist < transparentDistance;
 
-                    if (dist >= hidePinDistance && dist <= maxNameDistance) {
+                    Identifier texture = BannerManager.getBanner(banner.color());
+                    renderTextureAtBlock(matrixStack, consumer, cameraPos, 0.75f, texture, banner.worldMapLocation(), 128, 128, semiTransparent, 0.5f);
+
+                    if (dist <= maxNameDistance) {
                         Vec3d min = bannerCenter.subtract(0.5, 0.5, 0.5);
                         Vec3d max = bannerCenter.add(0.5, 0.5, 0.5);
 
@@ -103,8 +103,11 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                 }
 
                 if (candidateBanner != null) {
+                    Vec3d bannerCenter = candidateBanner.worldMapLocation().add(0.0, 0.5, 0.0);
+                    boolean semiTransparent = cameraPos.distanceTo(bannerCenter) < transparentDistance;
+
                     Vec3d namePos = candidateBanner.worldMapLocation().add(0.0, 1.0, 0.0);
-                    renderNameTag(client, matrixStack, consumer, cameraPos, namePos, candidateBanner.name(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
+                    renderNameTag(client, matrixStack, consumer, cameraPos, namePos, candidateBanner.name(), LightmapTextureManager.MAX_LIGHT_COORDINATE, semiTransparent, 0.5f);
                 }
             }
         });
@@ -244,11 +247,10 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
         matrixStack.popMatrix();
     }
 
-    public static void renderTextureAtBlock(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, float scale, Identifier texture, Vec3d position, int texWidth, int texHeight) {
+    public static void renderTextureAtBlock(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, float scale, Identifier texture, Vec3d position, int texWidth, int texHeight, boolean semiTransparent, float transparency) {
         matrices.push();
 
         float aspect = (float) texHeight / (float) texWidth;
-
         float heightWorld = aspect * scale;
         float halfW = scale * 0.5f;
         float halfH = heightWorld * 0.5f;
@@ -270,20 +272,27 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
         VertexConsumer buffer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(texture));
         int light = 0xF000F0;
 
-        buffer.vertex(matrix, (float)(topLeft.x - camPos.x), (float)(topLeft.y - camPos.y), (float)(topLeft.z - camPos.z)).color(255,255,255,255).texture(0f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f,1f,0f);
-        buffer.vertex(matrix, (float)(topRight.x - camPos.x), (float)(topRight.y - camPos.y), (float)(topRight.z - camPos.z)).color(255,255,255,255).texture(1f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f,1f,0f);
-        buffer.vertex(matrix, (float)(botRight.x - camPos.x), (float)(botRight.y - camPos.y), (float)(botRight.z - camPos.z)).color(255,255,255,255).texture(1f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f,1f,0f);
-        buffer.vertex(matrix, (float)(botLeft.x - camPos.x), (float)(botLeft.y - camPos.y), (float)(botLeft.z - camPos.z)).color(255,255,255,255).texture(0f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f,1f,0f);
+        int alpha = semiTransparent ? (int)(255 * transparency) : 255;
+
+        buffer.vertex(matrix, (float)(topLeft.x - camPos.x), (float)(topLeft.y - camPos.y), (float)(topLeft.z - camPos.z))
+                .color(255, 255, 255, alpha).texture(0f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f, 1f, 0f);
+        buffer.vertex(matrix, (float)(topRight.x - camPos.x), (float)(topRight.y - camPos.y), (float)(topRight.z - camPos.z))
+                .color(255, 255, 255, alpha).texture(1f, 0f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f, 1f, 0f);
+        buffer.vertex(matrix, (float)(botRight.x - camPos.x), (float)(botRight.y - camPos.y), (float)(botRight.z - camPos.z))
+                .color(255, 255, 255, alpha).texture(1f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f, 1f, 0f);
+        buffer.vertex(matrix, (float)(botLeft.x - camPos.x), (float)(botLeft.y - camPos.y), (float)(botLeft.z - camPos.z))
+                .color(255, 255, 255, alpha).texture(0f, 1f).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0f, 1f, 0f);
 
         matrices.pop();
     }
 
-    public static void renderNameTag(MinecraftClient client, MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, Vec3d position, String text, int light) {
+
+    public static void renderNameTag(MinecraftClient client, MatrixStack matrices, VertexConsumerProvider vertexConsumers, Vec3d camPos, Vec3d position, String text, int light, boolean semiTransparent, float transparency) {
         TextRenderer textRenderer = client.textRenderer;
         if (client.player == null) return;
 
         matrices.push();
-        matrices.translate(position.x - camPos.x, position.y - camPos.y , position.z - camPos.z);
+        matrices.translate(position.x - camPos.x, position.y - camPos.y, position.z - camPos.z);
 
         float cameraYaw = client.gameRenderer.getCamera().getYaw();
         matrices.multiply(new Quaternionf().rotateY((float)Math.toRadians(-cameraYaw)));
@@ -293,10 +302,16 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
 
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         float xOffset = -textRenderer.getWidth(text) / 2.0f;
-        int backgroundColor = (int)(MinecraftClient.getInstance().options.getTextBackgroundOpacity(0.25F) * 255.0F) << 24;
 
-        textRenderer.draw(text, xOffset, 0, -2130706433, false, matrix, vertexConsumers, TextRenderer.TextLayerType.SEE_THROUGH, backgroundColor, light);
-        textRenderer.draw(text, xOffset, 0, -1, false, matrix, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0, LightmapTextureManager.applyEmission(light, 2));
+        int baseBackgroundAlpha = (int)(MinecraftClient.getInstance().options.getTextBackgroundOpacity(0.25F) * 255.0F);
+        int backgroundAlpha = semiTransparent ? (int)(baseBackgroundAlpha * transparency) : baseBackgroundAlpha;
+        int backgroundColor = backgroundAlpha << 24;
+
+        int textAlpha = semiTransparent ? (int)(255 * transparency) : 255;
+        int textColor = (textAlpha << 24) | 0xFFFFFF;
+
+        textRenderer.draw(text, xOffset, 0, textColor, false, matrix, vertexConsumers, TextRenderer.TextLayerType.SEE_THROUGH, backgroundColor, light);
+        textRenderer.draw(text, xOffset, 0, textColor, false, matrix, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0, LightmapTextureManager.applyEmission(light, 2));
 
         matrices.pop();
     }
