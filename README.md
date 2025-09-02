@@ -56,6 +56,11 @@ https://openavox.se/openutils
         <td class="false">❌</td>
         <td class="true">✅</td>
     </tr>
+    <tr>
+        <td>Worldmap Tools</td>
+        <td class="true">✅</td>
+        <td class="true">✅</td>
+    </tr>
 </tbody>
 </table>
 </details>
@@ -97,6 +102,20 @@ Toggle Quest Pad: Keybind "b"
 
 ## Survival Marknadenresets notifikationer
 Skickar en notifikation (toast + ljud) när marknaden återställs, (var tjugonde minut)!
+
+## Worldmap Tools
+Lägger till verktyg till /warp Worldmap. Detta inkluderar bland annat:
+- Att du ser vilka koordinater på kartan du just nu tittar på, samt vilket map ID.
+- Du ser alla banners tydligt genom map pins, samt deras namn och färg.
+- Du kan söka upp koordinater, map ID och banners via CTRL+F, vilket placerar ut en extra stor pin på det stället.
+- Du kan använda /worldmap (mapid|coord_to_id|id_to_coord), vilket är verktyg som hjälper dig om du laddar in kartor!
+
+<details>
+<summary>Showcase:</summary>
+
+![Map Pin](https://i.ibb.co/1Y2TxgGQ/2025-09-02-19-23-09.png)
+
+</details>
 
 ---
 
@@ -153,6 +172,11 @@ Skickar en notifikation (toast + ljud) när marknaden återställs, (var tjugond
         <td class="false">❌</td>
         <td class="true">✅</td>
       </tr>
+      <tr>
+        <td>Worldmap Tools</td>
+        <td class="true">✅</td>
+        <td class="true">✅</td>
+      </tr>
     </tbody>
   </table>
 </details>
@@ -186,5 +210,19 @@ Toggle Quest Pad: Keybind <code>b</code></p>
 
 <h2>Survival Market Reset Notifications</h2>
 <p>Sends a notification (toast + sound) when the market resets (every 20 minutes)!</p>
+
+## Worldmap Tools
+Adds multiple tools to /warp Worldmap, this includes but not limited to:
+- You can see what coordinates on the map you're looking at, as well as the map ID.
+- You can easily see all banners by map pins, as well as their colors and name.
+- You can search coordinates, map ID and banners by CTRL+F, which places an extra large pin there.
+- You can use /worldmap (mapid|coord_to_id|id_to_coord), which is a tool for you who is loading maps for increased safety.
+
+<details>
+<summary>Showcase:</summary>
+
+![Map Pin](https://i.ibb.co/1Y2TxgGQ/2025-09-02-19-23-09.png)
+
+</details>
 
 </details>

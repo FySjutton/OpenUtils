@@ -2,13 +2,12 @@ package avox.openutils.modules.worldmap;
 
 import avox.openutils.Module;
 import avox.openutils.SubserverManager;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
@@ -16,8 +15,6 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
-import net.minecraft.client.util.BufferAllocator;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
@@ -27,9 +24,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.joml.*;
-import org.lwjgl.glfw.GLFW;
 
-import java.awt.*;
 import java.lang.Math;
 import java.util.*;
 import java.util.List;
@@ -41,6 +36,9 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
     public static final Vec3d originBottomLeftMap = new Vec3d(8843, 58, -7366);
     public static final Vec3d originBottomLeft = new Vec3d(8839, 58, -7362);
     public static final Vec3d originTopRight = new Vec3d(8886, 65, -7409);
+
+    private final double minTile = Math.floor((double) (-10000 + 64) / 512);
+    private final double maxTile = Math.floor((double) (10000 + 64) / 512);
 
     public static boolean withinArea = false;
     public Vec2f target;
@@ -118,15 +116,68 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
         });
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            var mapidCommand = ClientCommandManager.literal("mapid")
-                    .executes(context -> executeMapId(client));
-
-            var namespacedCommand = ClientCommandManager.literal("openutils:mapid")
-                    .executes(context -> executeMapId(client));
-
-            dispatcher.register(mapidCommand);
-            dispatcher.register(namespacedCommand);
+            var worldmapCommand = ClientCommandManager.literal("worldmap")
+                    .then(ClientCommandManager.literal("mapid")
+                            .executes(context -> executeMapId(client))
+                    )
+                    .then(ClientCommandManager.literal("coord_to_id")
+                            .then(ClientCommandManager.argument("x", IntegerArgumentType.integer())
+                                    .then(ClientCommandManager.argument("z", IntegerArgumentType.integer())
+                                            .executes(context -> {
+                                                int x = IntegerArgumentType.getInteger(context, "x");
+                                                int z = IntegerArgumentType.getInteger(context, "z");
+                                                return executeCoordToId(client, x, z);
+                                            })
+                                    )
+                            )
+                    )
+                    .then(ClientCommandManager.literal("id_to_coord")
+                            .then(ClientCommandManager.argument("x", IntegerArgumentType.integer())
+                                    .then(ClientCommandManager.argument("z", IntegerArgumentType.integer())
+                                            .executes(context -> {
+                                                int x = IntegerArgumentType.getInteger(context, "x");
+                                                int z = IntegerArgumentType.getInteger(context, "z");
+                                                return executeIdToCoord(client, x, z);
+                                            })
+                                    )
+                            )
+                    );
+            dispatcher.register(worldmapCommand);
         });
+    }
+
+    private int executeIdToCoord(MinecraftClient client, int x, int z) {
+        if (client.player == null) return 0;
+        if (39 >= x && x >= 0 && 39 >= z && z >= 0) {
+            double tileX = minTile + x;
+            double tileZ = maxTile - z;
+
+            int xMin = (int) Math.floor(-64 + tileX * 512);
+            int xMax = (int) Math.floor(-64 + (tileX + 1) * 512);
+            int zMin = (int) Math.floor(-64 + tileZ * 512);
+            int zMax = (int) Math.floor(-64 + (tileZ + 1) * 512);
+
+            client.player.sendMessage(Text.of("§7Map ID §e" + x + ", " + z + "§7 motsvarar koordinaterna:\nX: §e§l" + xMin + " §7till §e§l" + xMax + "\n§7Z: §e§l" + zMin + " §7till§e§l " + zMax), false);
+        } else {
+            client.player.sendMessage(Text.of("§cOgiltigt map ID!"), false);
+        }
+        return 1;
+    }
+
+    private int executeCoordToId(MinecraftClient client, int x, int z) {
+        if (client.player == null) return 0;
+        if (x >= -10000 && x <= 10000 && z >= -10000 && z <= 10000) {
+            double tileX = Math.floor((double) (x + 64) / 512);
+            double tileZ = Math.floor((double) (z + 64) / 512);
+
+            int mapIdX = (int) (tileX - minTile);
+            int mapIdZ = (int) (maxTile - tileZ);
+
+            client.player.sendMessage(Text.of("§7Koordinaterna §e" + x + ", " + z + " §7motsvarar map ID:t §e§l" + mapIdX + ", " + mapIdZ + "§7!"), false);
+        } else {
+            client.player.sendMessage(Text.of("§cOgiltigt map ID!"), false);
+        }
+        return 1;
     }
 
     public boolean rayIntersectsBox(Vec3d start, Vec3d end, Vec3d min, Vec3d max) {
