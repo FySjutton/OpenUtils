@@ -19,7 +19,8 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -47,7 +48,11 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
 
     public static class Config extends ModuleConfig {
         @SerialEntry
+        public boolean viewMapPins = true;
+        @SerialEntry
         public boolean removeItemFrameNames = true;
+        @SerialEntry
+        public boolean sneakTransparentPins = true;
     }
 
     private WorldMapModule(MinecraftClient client) {
@@ -66,7 +71,7 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                     renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 2, Identifier.of("openutils", "textures/gui/map_pins/red.png"), arrow, 128, 128, false, 1);
                 }
             }
-            if (config.moduleEnabled && withinArea) {
+            if (config.moduleEnabled && withinArea && config.viewMapPins) {
                 MatrixStack matrixStack = context.matrixStack();
                 VertexConsumerProvider consumer = context.consumers();
 
@@ -87,7 +92,7 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                     boolean semiTransparent = dist < transparentDistance;
 
                     Identifier texture = BannerManager.getBanner(banner.color());
-                    renderTextureAtBlock(matrixStack, consumer, cameraPos, 0.75f, texture, banner.worldMapLocation(), 128, 128, semiTransparent, 0.5f);
+                    renderTextureAtBlock(matrixStack, consumer, cameraPos, 0.75f, texture, banner.worldMapLocation(), 128, 128, semiTransparent || (client.player.isSneaking() && config.sneakTransparentPins), 0.5f);
 
                     if (dist <= maxNameDistance) {
                         Vec3d min = bannerCenter.subtract(0.5, 0.5, 0.5);
@@ -107,7 +112,7 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                     boolean semiTransparent = cameraPos.distanceTo(bannerCenter) < transparentDistance;
 
                     Vec3d namePos = candidateBanner.worldMapLocation().add(0.0, 1.0, 0.0);
-                    renderNameTag(client, matrixStack, consumer, cameraPos, namePos, candidateBanner.name(), LightmapTextureManager.MAX_LIGHT_COORDINATE, semiTransparent, 0.5f);
+                    renderNameTag(client, matrixStack, consumer, cameraPos, namePos, candidateBanner.name(), LightmapTextureManager.MAX_LIGHT_COORDINATE, semiTransparent || (client.player.isSneaking() && config.sneakTransparentPins), 0.5f);
                 }
             }
         });
@@ -159,8 +164,14 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
             int mapIdX = tileX - minTile;
             int mapIdZ = maxTile - tileZ;
 
-            client.player.sendMessage(Text.of("§7Du befinner dig just nu i Map ID: §e§l" + mapIdX + ", " + mapIdZ + "§7!"), false);
-
+            MutableText copyButton = Text.literal(" [Kopiera]")
+                    .setStyle(
+                        Style.EMPTY
+                            .withColor(Formatting.AQUA)
+                            .withClickEvent(new ClickEvent.CopyToClipboard(mapIdX + ", " + mapIdZ))
+                            .withHoverEvent(new HoverEvent.ShowText(Text.literal("Tryck för att kopiera...")))
+                    );
+            client.player.sendMessage(Text.literal("§7Du befinner dig just nu i Map ID: §e§l" + mapIdX + ", " + mapIdZ + "§7!").append(copyButton), false);
             return 1;
         }
         return 0;
@@ -175,15 +186,6 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                         BannerManager.fetchBanners();
                     }
                     withinArea = true;
-
-                    if (client.currentScreen == null) {
-                        boolean ctrlDown = InputUtil.isKeyPressed(client.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(client.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_CONTROL);
-                        boolean fDown = InputUtil.isKeyPressed(client.getWindow().getHandle(), GLFW.GLFW_KEY_F);
-
-                        if (ctrlDown && fDown) {
-                            client.setScreen(new SearchScreen((location) -> arrow = location));
-                        }
-                    }
 
                     HitResult hit = client.player.raycast(10, 0.0F, false);
                     if (hit.getType() == HitResult.Type.BLOCK) {
@@ -332,9 +334,21 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
                         .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
                         .build())
                 .option(Option.<Boolean>createBuilder()
+                        .name(Text.of("Visa map pins"))
+                        .description(OptionDescription.of(Text.of("Om du vill se map pins hela tiden.")))
+                        .binding(true, () -> config.viewMapPins, val -> config.viewMapPins = val)
+                        .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
+                        .build())
+                .option(Option.<Boolean>createBuilder()
                         .name(Text.of("Ta Bort ItemFrame Namn"))
                         .description(OptionDescription.of(Text.of("Om alla item frame namn i Worldmap ska tas bort (left alt så syns de ändå).")))
                         .binding(true, () -> config.removeItemFrameNames, val -> config.removeItemFrameNames = val)
+                        .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
+                        .build())
+                .option(Option.<Boolean>createBuilder()
+                        .name(Text.of("Sneak Transparent Pins"))
+                        .description(OptionDescription.of(Text.of("Om alla map pins ska bli transparenta när man shiftar.")))
+                        .binding(true, () -> config.sneakTransparentPins, val -> config.sneakTransparentPins = val)
                         .controller(opt -> BooleanControllerBuilder.create(opt).coloured(true))
                         .build())
                 .build());

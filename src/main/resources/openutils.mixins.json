@@ -15,6 +15,7 @@
     "HandledScreenMixin",
     "InGameHudMixin",
     "ItemFrameEntityRendererMixin",
+    "KeyboardMixin",
     "SoundSystemMixin"
   ],
   "mixins": [
