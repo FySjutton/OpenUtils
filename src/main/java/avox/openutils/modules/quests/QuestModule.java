@@ -45,13 +45,13 @@ public class QuestModule extends Module<QuestModule.Config> {
                 "Uppdragsskärmen",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_N,
-                "OpenUtils"
+                category
         ));
         toggleQuestPad = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "Togglea Quest Pad",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_B,
-                "OpenUtils"
+                category
         ));
 
         taskQueue.add(new OpenUtils.DelayedTask(20 * 15, QuestManager::checkQuestExpireTimes, 1));

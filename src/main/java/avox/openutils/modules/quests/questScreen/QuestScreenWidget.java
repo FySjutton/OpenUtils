@@ -57,31 +57,31 @@ public class QuestScreenWidget extends ElementListWidget<QuestScreenWidget.Entry
         }
 
         @Override
-        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            int textY = y + client.textRenderer.fontHeight / 2 + 1;
+        public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+            int textY = getY() + client.textRenderer.fontHeight / 2 + 1;
             QuestScreen.QuestRenderLine renderLine = parent.questRenderLines.get(quest);
 
             int widthEnd = 10 + 16 + 7 + parent.maxMissionWidth;
-            context.fill(9, y, widthEnd, y + 17, 0x40ffffff);
-            context.fill(widthEnd + 2, y, widthEnd + parent.maxProgressWidth + 12, y + 17, 0x40ffffff);
+            context.fill(9, getY(), widthEnd, getY() + 17, 0x40ffffff);
+            context.fill(widthEnd + 2, getY(), widthEnd + parent.maxProgressWidth + 12, getY() + 17, 0x40ffffff);
             int barStart = widthEnd + 14 + parent.maxProgressWidth;
-            context.fill(barStart, y, barStart + 50, y + 17, 0x40ffffff);
+            context.fill(barStart, getY(), barStart + 50, getY() + 17, 0x40ffffff);
 
             int completed = (int)(48 * ((double) quest.completed / quest.total));
-            context.fill(barStart + 1, y + 1, barStart + 1 + completed, y + 16, 0xFF3aeb34);
-            context.fill(barStart + 1 + completed, y + 1, barStart + 49, y + 16, 0xFF2e2e2e);
+            context.fill(barStart + 1, getY() + 1, barStart + 1 + completed, getY() + 16, 0xFF3aeb34);
+            context.fill(barStart + 1 + completed, getY() + 1, barStart + 49, getY() + 16, 0xFF2e2e2e);
 
-            QuestPadRenderer.drawQuestImage(quest, context, 10, y + 1);
+            QuestPadRenderer.drawQuestImage(quest, context, 10, getY() + 1);
             context.drawText(client.textRenderer, renderLine.questText, 16 + 10 + 3, textY, 0xFFFFFFFF, true);
             context.drawCenteredTextWithShadow(client.textRenderer, renderLine.progressText, 16 + 10 + 2 + parent.maxMissionWidth + 5 + 5 + 2 + parent.maxProgressWidth / 2, textY, 0xFFFFFFFF);
 
-            context.fill(barStart + 50 + 2, y, barStart + 50 + 2 + 50, y + 17, 0x40ffffff);
+            context.fill(barStart + 50 + 2, getY(), barStart + 50 + 2 + 50, getY() + 17, 0x40ffffff);
 
             String expireTime = formatUnixToTime(quest.expiresAt);
             context.drawCenteredTextWithShadow(client.textRenderer, expireTime, barStart + 50 + 2 + 25, textY, 0xFFFFFFFF);
 
             int priceWidth = width - (barStart + 50 + 2 + 52) - 10 - (overflows() ? 10 : 0);
-            context.fill(barStart + 50 + 2 + 52, y, barStart + 50 + 2 + 52 + priceWidth, y + 17, 0x40ffffff);
+            context.fill(barStart + 50 + 2 + 52, getY(), barStart + 50 + 2 + 52 + priceWidth, getY() + 17, 0x40ffffff);
             String priceText = quest.priceMoney + "kr & " + quest.priceXP + "xp";
             context.drawCenteredTextWithShadow(client.textRenderer, priceText, barStart + 50 + 2 + 52 + priceWidth / 2, textY, 0xFFFFFFFF);
         }

@@ -28,7 +28,7 @@ public class PlayerTabBox {
         ArrayList<String> players = new ArrayList<>(client.getNetworkHandler()
                 .getPlayerList()
                 .stream()
-                .map(entry -> entry.getProfile().getName())
+                .map(entry -> entry.getProfile().name())
                 .collect(Collectors.toSet()).stream().toList());
         searchBox = new SearchBox(client, width, height, viewer, Text.of("Player Statistics"), this::parseJsonToCategories, this::getAPIUrl, this::verifyInput, players);
 
@@ -45,8 +45,8 @@ public class PlayerTabBox {
         APIFetchString.append(searchValue);
 
         for (int i = 2; i < searchBox.getEntryCount(); i++) {
-            if (searchBox.getEntry(i).checkboxWidget.isChecked()) {
-                APIFetchString.append("&").append(searchBox.getEntry(i).checkboxWidget.getMessage().getString().toLowerCase().split(" ")[0]).append("=true");
+            if (searchBox.children().get(i).checkboxWidget.isChecked()) {
+                APIFetchString.append("&").append(searchBox.children().get(i).checkboxWidget.getMessage().getString().toLowerCase().split(" ")[0]).append("=true");
             }
         }
 

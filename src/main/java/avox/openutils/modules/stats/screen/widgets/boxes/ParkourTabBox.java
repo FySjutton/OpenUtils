@@ -26,7 +26,7 @@ public class ParkourTabBox {
         StringBuilder APIFetchString = new StringBuilder("https://api.90gqopen.se/parkour/?name=");
         APIFetchString.append(searchValue.replaceAll(" ", "_").toLowerCase());
 
-        int sliderValue = searchBox.getEntry(2).sliderWidget.getDisplayScaled();
+        int sliderValue = searchBox.children().get(2).sliderWidget.getDisplayScaled();
         if (sliderValue != 10) {
             APIFetchString.append("&length=").append(sliderValue);
         }

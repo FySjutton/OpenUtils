@@ -122,23 +122,23 @@ public class StatViewer extends ElementListWidget<StatViewer.Entry> {
         }
 
         @Override
-        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            int centerHeight = y + entryHeight / 2 - client.textRenderer.fontHeight / 2;
+        public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+            int centerHeight = getY() + itemHeight / 2 - client.textRenderer.fontHeight / 2;
             if (this.category != null) {
-                context.drawText(client.textRenderer, this.category, x - 5, centerHeight, 0xFFfff700, true);
+                context.drawText(client.textRenderer, this.category, getX() - 5, centerHeight, 0xFFfff700, true);
             } else if (folderBtn != null) {
-                folderBtn.setPosition(x - 5, y);
+                folderBtn.setPosition(getX() - 5, getY());
                 folderBtn.setDimensions(18, 18);
                 if (folderBtn.isMouseOver(mouseX, mouseY)) {
-                    folderBtn.render(context, mouseX, mouseY, tickDelta);
+                    folderBtn.render(context, mouseX, mouseY, deltaTicks);
                 }
 
-                context.drawText(client.textRenderer, Text.of(folder.open ? "▼" : "▶"), x + 1, centerHeight + 1, 0xFFFFFFFF, true);
-                context.drawText(client.textRenderer, folderName, x + 18, centerHeight + 1, 0xFFFFFFFF, true);
+                context.drawText(client.textRenderer, Text.of(folder.open ? "▼" : "▶"), getX() + 1, centerHeight + 1, 0xFFFFFFFF, true);
+                context.drawText(client.textRenderer, folderName, getX() + 18, centerHeight + 1, 0xFFFFFFFF, true);
             } else {
-                context.fill(x - 5, y, x + entryWidth - (overflows() ? 8 : 0), y + entryHeight, 0x80000000);
-                context.drawText(client.textRenderer, this.key, x, centerHeight, 0xFFFFFFFF, true);
-                context.drawText(client.textRenderer, this.value, x + entryWidth - (overflows() ? 8 : 0) - client.textRenderer.getWidth(this.value) - 3, centerHeight, 0xFFFFFFFF, true);
+                context.fill(getX() - 5, getY(), getX() + getRowWidth() - (overflows() ? 8 : 0), getY() + itemHeight - 2, 0x80000000);
+                context.drawText(client.textRenderer, this.key, getX(), centerHeight, 0xFFFFFFFF, true);
+                context.drawText(client.textRenderer, this.value, getX() + getRowWidth() - (overflows() ? 8 : 0) - client.textRenderer.getWidth(this.value) - 3, centerHeight, 0xFFFFFFFF, true);
             }
         }
     }

@@ -8,7 +8,6 @@ import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -28,8 +27,6 @@ import org.joml.*;
 import java.lang.Math;
 import java.util.*;
 import java.util.List;
-
-import static avox.openutils.modules.worldmap.BannerManager.banners;
 
 public class WorldMapModule extends Module<WorldMapModule.Config> {
     public static final WorldMapModule INSTANCE = new WorldMapModule(MinecraftClient.getInstance());
@@ -60,57 +57,6 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
             Identifier.of("openutils", "world_map"),
             this::renderHud
         );
-
-        WorldRenderEvents.AFTER_ENTITIES.register((context) -> {
-            if (config.moduleEnabled && withinArea && arrow != null) {
-                MatrixStack matrixStack = context.matrixStack();
-                VertexConsumerProvider consumer = context.consumers();
-                if (matrixStack != null && consumer != null) {
-                    renderTextureAtBlock(matrixStack, consumer, context.camera().getPos(), 2, Identifier.of("openutils", "textures/gui/map_pins/red.png"), arrow, 128, 128);
-                }
-            }
-            if (config.moduleEnabled && withinArea && config.viewMapPins) {
-                MatrixStack matrixStack = context.matrixStack();
-                VertexConsumerProvider consumer = context.consumers();
-
-                BannerManager.Banner candidateBanner = null;
-                double closestCandidateDist = Double.MAX_VALUE;
-                float hidePinDistance = config.closeInvisiblePins ? 1.5f : 0;
-                float maxNameDistance = 10f;
-
-                Vec3d cameraPos = context.camera().getPos();
-                Vec3d lookEnd = cameraPos.add(client.player.getRotationVec(1.0f).normalize().multiply(maxNameDistance));
-
-                for (BannerManager.Banner banner : banners) {
-                    if (matrixStack == null || consumer == null || banner.worldMapLocation().equals(arrow)) continue;
-
-                    Vec3d bannerCenter = banner.worldMapLocation().add(0.0, 0.5, 0.0);
-                    double dist = cameraPos.distanceTo(bannerCenter);
-
-                    if (dist > hidePinDistance) {
-                        Identifier texture = BannerManager.getBanner(banner.color());
-                        renderTextureAtBlock(matrixStack, consumer, cameraPos, 0.75f, texture, banner.worldMapLocation(), 128, 128);
-                    }
-
-                    if (dist >= hidePinDistance && dist <= maxNameDistance) {
-                        Vec3d min = bannerCenter.subtract(0.5, 0.5, 0.5);
-                        Vec3d max = bannerCenter.add(0.5, 0.5, 0.5);
-
-                        if (rayIntersectsBox(cameraPos, lookEnd, min, max)) {
-                            if (dist < closestCandidateDist) {
-                                closestCandidateDist = dist;
-                                candidateBanner = banner;
-                            }
-                        }
-                    }
-                }
-
-                if (candidateBanner != null) {
-                    Vec3d namePos = candidateBanner.worldMapLocation().add(0.0, 1.0, 0.0);
-                    renderNameTag(client, matrixStack, consumer, cameraPos, namePos, candidateBanner.name(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
-                }
-            }
-        });
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             var worldmapCommand = ClientCommandManager.literal("worldmap")
@@ -177,7 +123,7 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
         return 1;
     }
 
-    public boolean rayIntersectsBox(Vec3d start, Vec3d end, Vec3d min, Vec3d max) {
+    public static boolean rayIntersectsBox(Vec3d start, Vec3d end, Vec3d min, Vec3d max) {
         double tmin = (min.x - start.x) / (end.x - start.x);
         double tmax = (max.x - start.x) / (end.x - start.x);
         if (tmin > tmax) { double tmp = tmin; tmin = tmax; tmax = tmp; }
@@ -204,7 +150,7 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
             int minTile = (int) Math.floor((-worldSizeHalf + 64) / mapArtSize);
             int maxTile = (int) Math.floor((worldSizeHalf + 64) / mapArtSize);
 
-            Vec3d location = client.player.getPos();
+            Vec3d location = client.player.getBlockPos().toCenterPos();
 
             int tileX = (int) Math.floor((location.x + 64) / mapArtSize);
             int tileZ = (int) Math.floor((location.z + 64) / mapArtSize);
@@ -229,7 +175,7 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
     public void tick(MinecraftClient client) {
         if (config.moduleEnabled) {
             if (client.player != null && client.world != null) {
-                if (withinWorldMap(client.player.getPos())) {
+                if (withinWorldMap(client.player.getBlockPos().toCenterPos())) {
                     if (!withinArea) {
                         BannerManager.fetchBanners();
                     }

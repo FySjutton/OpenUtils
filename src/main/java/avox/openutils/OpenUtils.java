@@ -14,8 +14,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.toast.SystemToast;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +29,7 @@ import static avox.openutils.SubserverManager.*;
 public class OpenUtils implements ModInitializer {
 	public static final String MOD_ID = "openutils";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    public static final KeyBinding.Category category = KeyBinding.Category.create(Identifier.of(Text.translatable("openutils.keybinding_category").getString()));
 
 	public static final ModuleManager moduleManager = new ModuleManager();
 	public static final List<DelayedTask> taskQueue = new ArrayList<>();

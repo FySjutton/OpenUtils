@@ -4,9 +4,11 @@ import avox.openutils.modules.stock.StockModule;
 import avox.openutils.modules.stock.screen.selectWidget.SelectWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -89,18 +91,18 @@ public class StockScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean doubled) {
         boolean found = false;
         for (SelectWidget widget : getSelectWidgets()) {
             if (widget.isFocused()) {
                 found = true;
-                widget.mouseClicked(mouseX, mouseY, button);
+                widget.mouseClicked(click, doubled);
             } else {
                 widget.open = false;
             }
         }
         if (found) return true;
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
@@ -114,22 +116,22 @@ public class StockScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
         for (SelectWidget widget : getSelectWidgets()) {
             if (widget.isFocused()) {
-                return widget.mouseReleased(mouseX, mouseY, button);
+                return widget.mouseReleased(click);
             }
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+    public boolean keyReleased(KeyInput input) {
         for (SelectWidget widget : getSelectWidgets()) {
             if (widget.isFocused()) {
-                return widget.keyReleased(keyCode, scanCode, modifiers);
+                return widget.keyReleased(input);
             }
         }
-        return super.keyReleased(keyCode, scanCode, modifiers);
+        return super.keyReleased(input);
     }
 }

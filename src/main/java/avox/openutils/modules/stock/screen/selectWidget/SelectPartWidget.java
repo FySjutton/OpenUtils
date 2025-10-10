@@ -105,10 +105,10 @@ public class SelectPartWidget extends ElementListWidget<SelectPartWidget.Entry> 
         }
 
         @Override
-        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            checkbox.setY(y);
+        public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+            checkbox.setY(getY());
             checkbox.setX(posX + 3);
-            checkbox.render(context, mouseX, mouseY, tickDelta);
+            checkbox.render(context, mouseX, mouseY, deltaTicks);
         }
     }
 }

@@ -1,6 +1,7 @@
 package avox.openutils.modules.stats;
 
 import avox.openutils.Module;
+import avox.openutils.OpenUtils;
 import avox.openutils.modules.stats.screen.StatScreen;
 import dev.isxander.yacl3.api.ConfigCategory;
 import dev.isxander.yacl3.api.Option;
@@ -25,7 +26,7 @@ public class StatsModule extends Module<StatsModule.Config> {
                 "Statistik Skärmen",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_V,
-                "OpenUtils"
+                OpenUtils.category
         ));
     }
 

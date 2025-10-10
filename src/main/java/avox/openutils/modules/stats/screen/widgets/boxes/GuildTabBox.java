@@ -30,7 +30,7 @@ public class GuildTabBox {
         StringBuilder APIFetchString = new StringBuilder("https://api.90gqopen.se/guild/?name=");
         APIFetchString.append(searchValue.toLowerCase());
 
-        if (searchBox.getEntry(2).checkboxWidget.isChecked()) {
+        if (searchBox.children().get(2).checkboxWidget.isChecked()) {
             APIFetchString.append("&memberlist=true");
         }
 

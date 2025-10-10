@@ -3,6 +3,7 @@ package avox.openutils.modules.worldmap;
 import avox.openutils.OpenUtils;
 import avox.openutils.modules.stats.screen.widgets.Suggestor;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.screen.Screen;
 
 import net.minecraft.client.gui.DrawContext;
@@ -230,8 +231,8 @@ public class SearchScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (suggestor.render && suggestor.startX < mouseX && (suggestor.startX + suggestor.width) > mouseX && suggestor.startY < mouseY && (suggestor.startY + suggestor.height) > mouseY) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (suggestor.render && suggestor.startX < click.x() && (suggestor.startX + suggestor.width) > click.x() && suggestor.startY < click.y() && (suggestor.startY + suggestor.height) > click.y()) {
             this.suggestor.mouseClicked();
             return false;
         } else {
@@ -239,7 +240,7 @@ public class SearchScreen extends Screen {
                 suggestor.textField.setFocused(false);
                 suggestor.render = false;
             }
-            return super.mouseClicked(mouseX, mouseY, button);
+            return super.mouseClicked(click, doubled);
         }
     }
 

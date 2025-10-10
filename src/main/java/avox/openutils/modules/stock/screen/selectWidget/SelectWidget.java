@@ -3,11 +3,9 @@ package avox.openutils.modules.stock.screen.selectWidget;
 import avox.openutils.modules.stock.screen.StockScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.input.KeyInput;
 
 import java.util.LinkedHashMap;
 
@@ -75,12 +73,12 @@ public class SelectWidget implements Drawable, Selectable, Element {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (mouseX > x && mouseX < x + width && mouseY > y && mouseY < y + 20) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (click.x() > x && click.x() < x + width && click.y() > y && click.y() < y + 20) {
             open = !open;
         }
         if (!open) return false;
-        return selectPartWidget.mouseClicked(mouseX, mouseY, button);
+        return selectPartWidget.mouseClicked(click, doubled);
     }
 
     @Override
@@ -90,14 +88,14 @@ public class SelectWidget implements Drawable, Selectable, Element {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyInput input) {
         if (!open) return false;
-        return selectPartWidget.keyPressed(keyCode, scanCode, modifiers);
+        return selectPartWidget.keyPressed(input);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
         if (!open) return false;
-        return selectPartWidget.mouseReleased(mouseX, mouseY, button);
+        return selectPartWidget.mouseReleased(click);
     }
 }

@@ -12,6 +12,7 @@ import net.minecraft.client.gui.tab.Tab;
 import net.minecraft.client.gui.tab.TabManager;
 import net.minecraft.client.gui.widget.GridWidget;
 import net.minecraft.client.gui.widget.TabNavigationWidget;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import avox.openutils.modules.stats.screen.widgets.SearchBox;
 import avox.openutils.modules.stats.screen.widgets.Suggestor;
@@ -70,16 +71,16 @@ public class StatScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyInput input) {
         if (tabManager.getCurrentTab() != null) {
             Suggestor suggestor = ((newTab) tabManager.getCurrentTab()).searchBox.suggestor;
             if (suggestor.textField.isFocused()) {
-                if (keyCode == 258) { // tab
+                if (input.getKeycode() == 258) { // tab
                     if (!suggestor.filteredSuggestions.isEmpty()) {
                         suggestor.textField.setText(suggestor.filteredSuggestions.get(suggestor.scroll + suggestor.highlight));
                         return false;
                     }
-                } if (keyCode == 264) { // down
+                } if (input.getKeycode() == 264) { // down
                     if (suggestor.displaySuggestions.size() - 1 > suggestor.highlight) {
                         suggestor.highlight ++;
                     } else {
@@ -87,7 +88,7 @@ public class StatScreen extends Screen {
                     }
                     suggestor.updateSuggestions();
                     return false;
-                } else if (keyCode == 265) { // up
+                } else if (input.getKeycode() == 265) { // up
                     if (suggestor.highlight > 0) {
                         suggestor.highlight --;
                     } else {
@@ -99,6 +100,6 @@ public class StatScreen extends Screen {
             }
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 }

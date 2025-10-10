@@ -3,6 +3,7 @@ package avox.openutils.modules.stock.screen;
 import avox.openutils.modules.stock.StockItem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
@@ -73,12 +74,12 @@ public class ListWidget extends ElementListWidget<ListWidget.Entry> {
         }
 
         @Override
-        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            context.fill(x, y, x + entryWidth - 12, y + 20, 0x80000000);
-            context.drawItem(stockItem.itemStack.visualStack, 12, y + 2);
-            int textY = y + 10 - textRenderer.fontHeight / 2;
+        public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+            context.fill(getX(), getY(), getX() + getRowWidth() - 12, getY() + 20, 0x80000000);
+            context.drawItem(stockItem.itemStack.visualStack, 12, getY() + 2);
+            int textY = getY() + 10 - textRenderer.fontHeight / 2;
             context.drawText(textRenderer, stockItem.name, 33, textY, 0xFFFFFFFF, true);
-            context.drawText(textRenderer, info, x + entryWidth - infoWidth - 20, textY, 0xFFFFFFFF, true);
+            context.drawText(textRenderer, info, getX() + getRowWidth() - infoWidth - 20, textY, 0xFFFFFFFF, true);
 
             if (!stockScreen.dropsDownsHovered() && hovered) {
                 context.drawItemTooltip(textRenderer, stockItem.itemStack.visualStack, mouseX, mouseY);
@@ -86,8 +87,8 @@ public class ListWidget extends ElementListWidget<ListWidget.Entry> {
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            return super.mouseClicked(mouseX, mouseY, button);
+        public boolean mouseClicked(Click click, boolean doubled) {
+            return super.mouseClicked(click, doubled);
         }
     }
 }

@@ -1,30 +1,20 @@
 plugins {
 	id 'fabric-loom' version "${loom_version}"
 	id 'maven-publish'
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 repositories {
 	mavenCentral()
-	maven { url 'https://maven.fabricmc.net/' }
-	exclusiveContent {
-		forRepository {
-			maven {
-				name = "Modrinth"
-				url = "https://api.modrinth.com/maven"
-			}
-		}
-		filter {
-			includeGroup "maven.modrinth"
-		}
-	}
-	maven {
-		name = "Mod Menu"
-		url = "https://maven.terraformersmc.com/releases/"
-	}
-	maven {
-		name = 'Xander Maven'
-		url = 'https://maven.isxander.dev/releases'
-	}
+    gradlePluginPortal()
+    maven {
+        name = "Mod Menu"
+        url = "https://maven.terraformersmc.com/releases/"
+    }
+    maven {
+        name 'Xander Maven'
+        url 'https://maven.isxander.dev/releases'
+    }
 }
 
 version = project.mod_version
@@ -41,10 +31,9 @@ loom {
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "dev.isxander:yet-another-config-lib:${project.yacl_version}"
 	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
@@ -72,4 +61,27 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}"}
 	}
+}
+
+def changelogText = ''
+def changelogFile = file('CHANGELOG.md')
+if (changelogFile.exists()) {
+    changelogText = changelogFile.text
+}
+
+modrinth {
+    token = System.getenv('MODRINTH_TOKEN')
+    projectId = 'openutils'
+    versionNumber = project.mod_version
+    versionType = 'release'
+    uploadFile = remapJar
+    gameVersions = ['1.21.9', '1.21.10']
+    loaders = ['fabric']
+    changelog = changelogText
+
+    dependencies {
+        required.project 'fabric-api'
+        required.project 'yacl'
+        required.project 'modmenu'
+    }
 }

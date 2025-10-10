@@ -6,6 +6,7 @@ import avox.openutils.modules.stats.screen.widgets.navigation.StatCategory;
 import com.google.gson.JsonObject;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
@@ -43,7 +44,7 @@ public class SearchBox extends ElementListWidget<SearchBox.Entry> {
         addEntry(new Entry(EntryType.Title, ""));
         addEntry(new Entry(EntryType.SearchBox, ""));
 
-        this.suggestor = new Suggestor(getEntry(1).textFieldWidget, client.textRenderer, 100, suggestions);
+        this.suggestor = new Suggestor(children().get(1).textFieldWidget, client.textRenderer, 100, suggestions);
 
         getCategories = parseJsonFunction;
         this.getAPIString = getAPIString;
@@ -117,26 +118,26 @@ public class SearchBox extends ElementListWidget<SearchBox.Entry> {
         }
 
         @Override
-        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
             if (titleEntry) {
-                context.drawCenteredTextWithShadow(client.textRenderer, title, 15 + entryWidth / 2, y + entryHeight / 2 - client.textRenderer.fontHeight / 2, 0xFFFFFFFF);
+                context.drawCenteredTextWithShadow(client.textRenderer, title, 15 + getRowWidth() / 2, getY() + itemHeight / 2 - client.textRenderer.fontHeight / 2, 0xFFFFFFFF);
             }
 
             if (checkboxWidget != null) {
-                checkboxWidget.setPosition(15, y);
-                checkboxWidget.render(context, mouseX, mouseY, tickDelta);
+                checkboxWidget.setPosition(15, getY());
+                checkboxWidget.render(context, mouseX, mouseY, deltaTicks);
             }
             if (textFieldWidget != null) {
-                textFieldWidget.setPosition(15, y);
-                textFieldWidget.render(context, mouseX, mouseY, tickDelta);
+                textFieldWidget.setPosition(15, getY());
+                textFieldWidget.render(context, mouseX, mouseY, deltaTicks);
 
-                searchButton.setPosition(15 + entryWidth - 20, y);
-                searchButton.render(context, mouseX, mouseY, tickDelta);
-                context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, SEARCH_ICON, 15 + entryWidth - 17, y + 4, 12, 12);
+                searchButton.setPosition(15 + getRowWidth() - 20, getY());
+                searchButton.render(context, mouseX, mouseY, deltaTicks);
+                context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, SEARCH_ICON, 15 + getRowWidth() - 17, getY() + 4, 12, 12);
             }
             if (sliderWidget != null) {
-                sliderWidget.setPosition(15, y);
-                sliderWidget.render(context, mouseX, mouseY, tickDelta);
+                sliderWidget.setPosition(15, getY());
+                sliderWidget.render(context, mouseX, mouseY, deltaTicks);
             }
         }
     }
@@ -148,8 +149,8 @@ public class SearchBox extends ElementListWidget<SearchBox.Entry> {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (suggestor.render && suggestor.startX < mouseX && (suggestor.startX + suggestor.width) > mouseX && suggestor.startY < mouseY && (suggestor.startY + suggestor.height) > mouseY) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (suggestor.render && suggestor.startX < click.x() && (suggestor.startX + suggestor.width) > click.x() && suggestor.startY < click.y() && (suggestor.startY + suggestor.height) > click.y()) {
             this.suggestor.mouseClicked();
             return false;
         } else {
@@ -157,7 +158,7 @@ public class SearchBox extends ElementListWidget<SearchBox.Entry> {
                 suggestor.textField.setFocused(false);
                 suggestor.render = false;
             }
-            return super.mouseClicked(mouseX, mouseY, button);
+            return super.mouseClicked(click, doubled);
         }
     }
 
@@ -178,7 +179,7 @@ public class SearchBox extends ElementListWidget<SearchBox.Entry> {
     }
 
     private void search() {
-        String searchText = getEntry(1).textFieldWidget.getText().toLowerCase();
+        String searchText = children().get(1).textFieldWidget.getText().toLowerCase();
         if (!verifyInput.apply(searchText)) {
             return;
         }

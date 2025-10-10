@@ -1,7 +1,7 @@
 package avox.openutils.mixin;
 
 import avox.openutils.modules.worldmap.WorldMapModule;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.ItemFrameEntityRenderer;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +17,7 @@ public abstract class ItemFrameEntityRendererMixin {
             cancellable = true
     )
     private void preventLabelIfInMap(ItemFrameEntity itemFrameEntity, double d, CallbackInfoReturnable<Boolean> cir) {
-        if (WorldMapModule.INSTANCE.getConfig().removeItemFrameNames && WorldMapModule.withinArea && !Screen.hasAltDown()) {
+        if (WorldMapModule.INSTANCE.getConfig().removeItemFrameNames && WorldMapModule.withinArea && !MinecraftClient.getInstance().isAltPressed()) {
             cir.setReturnValue(false);
         }
     }

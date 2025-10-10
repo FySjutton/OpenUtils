@@ -16,6 +16,7 @@
     "InGameHudMixin",
     "ItemFrameEntityRendererMixin",
     "KeyboardMixin",
+    "MixinWorldRenderer",
     "SoundSystemMixin"
   ],
   "mixins": [
