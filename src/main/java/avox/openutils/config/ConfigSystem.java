@@ -37,9 +37,9 @@ public class ConfigSystem {
             .title(Text.of("OpenUtils"))
             .category(moduleCategory.build())
             .save(() -> {
-                ConfigSystem.saveModuleConfigs(); // Detta är överkurs om du redan sparar allt i getConfig
+                ConfigSystem.saveModuleConfigs();
                 ConfigSystem.CONFIG.save();
-                ConfigSystem.applyModuleConfigs(); // <- viktigast!
+                ConfigSystem.applyModuleConfigs();
             })
         )).generateScreen(parent);
     }
