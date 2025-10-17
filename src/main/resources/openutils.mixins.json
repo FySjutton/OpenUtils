@@ -11,15 +11,10 @@
   "client": [
     "ClientAdvancementManagerMixin",
     "ClientPlayNetworkHandlerMixin",
-    "GenericContainerScreenMixin",
     "HandledScreenMixin",
     "InGameHudMixin",
     "ItemFrameEntityRendererMixin",
     "KeyboardMixin",
-    "MixinWorldRenderer",
-    "SoundSystemMixin"
-  ],
-  "mixins": [
-    "ScreenHandlerMixin"
+    "MixinWorldRenderer"
   ]
 }
