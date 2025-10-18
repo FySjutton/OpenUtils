@@ -12,9 +12,6 @@
     "ClientAdvancementManagerMixin",
     "ClientPlayNetworkHandlerMixin",
     "HandledScreenMixin",
-    "InGameHudMixin",
-    "ItemFrameEntityRendererMixin",
-    "KeyboardMixin",
-    "MixinWorldRenderer"
+    "InGameHudMixin"
   ]
 }
