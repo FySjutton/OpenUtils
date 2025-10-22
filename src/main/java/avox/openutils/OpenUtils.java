@@ -27,7 +27,7 @@ import static avox.openutils.SubserverManager.*;
 public class OpenUtils implements ModInitializer {
 	public static final String MOD_ID = "openutils";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    public static final KeyBinding.Category category = KeyBinding.Category.create(Identifier.of(Text.translatable("openutils.keybinding_category").getString()));
+    public static final KeyBinding.Category category = KeyBinding.Category.create(Identifier.of("openutils", "category.openutils.openutils"));
 
 	public static final ModuleManager moduleManager = new ModuleManager();
 	public static final List<DelayedTask> taskQueue = new ArrayList<>();
