@@ -7,7 +7,7 @@ import dev.isxander.yacl3.api.ConfigCategory;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import net.minecraft.client.MinecraftClient;
 
-public abstract class Module<T extends Module.ModuleConfig> {
+public abstract class Module<T extends Module.BaseConfig> {
     private final String id;
     public final int priority;
     protected T config;
@@ -54,7 +54,9 @@ public abstract class Module<T extends Module.ModuleConfig> {
 
     public abstract void loadConfig(ConfigCategory.Builder builder);
 
-    public static abstract class ModuleConfig {
+    public static abstract class BaseConfig {}
+
+    public static abstract class ModuleConfig extends BaseConfig {
         @SerialEntry
         public boolean moduleEnabled = true;
     }
