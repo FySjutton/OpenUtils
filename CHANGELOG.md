@@ -1,1 +1,2 @@
-Fixed keybind category not working
+Readded world map module
+Minor fixes

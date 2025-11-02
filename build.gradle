@@ -75,7 +75,7 @@ modrinth {
     versionNumber = project.mod_version
     versionType = 'release'
     uploadFile = remapJar
-    gameVersions = ['1.21.9', '1.21.10']
+    gameVersions = ['1.21.10']
     loaders = ['fabric']
     changelog = changelogText
 

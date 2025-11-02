@@ -5,6 +5,7 @@ import avox.openutils.modules.AdvancementRemoverModule;
 import avox.openutils.modules.MarketResetModule;
 import avox.openutils.modules.quests.QuestModule;
 import avox.openutils.modules.stats.StatsModule;
+import avox.openutils.modules.worldmap.WorldMapModule;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -19,8 +20,8 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Supplier;
 
 import static avox.openutils.SubserverManager.*;
 
@@ -32,6 +33,9 @@ public class OpenUtils implements ModInitializer {
 	public static final ModuleManager moduleManager = new ModuleManager();
 	public static final List<DelayedTask> taskQueue = new ArrayList<>();
 
+    private static final Map<String, Supplier<Text>> actionBarSuppliers = new HashMap<>();
+    private static final Map<String, Integer> supplierTimers = new HashMap<>();
+
 	@Override
 	public void onInitialize() {
 		// Register standard modules
@@ -39,7 +43,7 @@ public class OpenUtils implements ModInitializer {
 		moduleManager.registerModule(QuestModule.INSTANCE);
 		moduleManager.registerModule(MarketResetModule.INSTANCE);
 		moduleManager.registerModule(AdvancementRemoverModule.INSTANCE);
-//		moduleManager.registerModule(WorldMapModule.INSTANCE);
+		moduleManager.registerModule(WorldMapModule.INSTANCE);
 
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
 			// Load the config
@@ -77,7 +81,34 @@ public class OpenUtils implements ModInitializer {
 		});
 
 		ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> taskQueue.add(new DelayedTask(20, () -> detectSubserver(client))));
-	}
+
+        ClientTickEvents.START_CLIENT_TICK.register(client -> {
+            tickSuppliers();
+        });
+    }
+
+    public static Collection<Supplier<Text>> getActiveActionBarSuppliers() {
+        return actionBarSuppliers.values();
+    }
+
+    public static void addActionSupplier(String key, Supplier<Text> supplier, int ticks) {
+        actionBarSuppliers.put(key, supplier);
+        supplierTimers.put(key, ticks);
+    }
+
+    private static void tickSuppliers() {
+        Iterator<Map.Entry<String, Integer>> it = supplierTimers.entrySet().iterator();
+        while (it.hasNext()) {
+            var entry = it.next();
+            int ticksLeft = entry.getValue() - 1;
+            if (ticksLeft <= 0) {
+                actionBarSuppliers.remove(entry.getKey());
+                it.remove();
+            } else {
+                entry.setValue(ticksLeft);
+            }
+        }
+    }
 
 	public static boolean playerInSurvival() {
 		return getActiveSubServer().equals(Subserver.SURVIVAL_SPAWN) || getActiveSubServer().equals(Subserver.SURVIVAL_PLOT) || getActiveSubServer().equals(Subserver.SURVIVAL_RESOURCE);
