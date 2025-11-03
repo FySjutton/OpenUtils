@@ -1,40 +1,33 @@
 package avox.openutils.modules.stats;
 
 import avox.openutils.Module;
-import avox.openutils.OpenUtils;
 import avox.openutils.modules.stats.screen.StatScreen;
+import avox.openutils.togglescreen.core.QuickSetting;
 import dev.isxander.yacl3.api.ConfigCategory;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
 import dev.isxander.yacl3.api.OptionGroup;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
-import org.lwjgl.glfw.GLFW;
 
-public class StatsModule extends Module<StatsModule.Config> {
-    public static final StatsModule INSTANCE = new StatsModule(MinecraftClient.getInstance());
+public class StatsModule extends Module<StatsModule.Config> implements QuickSetting {
+    public static final StatsModule INSTANCE = new StatsModule();
+
     public static class Config extends ModuleConfig {}
-    private static KeyBinding statScreen;
 
-    private StatsModule(MinecraftClient client) {
-        super("stats", 1, Config.class);
-        statScreen = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "Statistik Skärmen",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_V,
-                OpenUtils.category
-        ));
+    private StatsModule() {
+        super("stats", 10, Config.class);
     }
 
     @Override
-    public void tick(MinecraftClient client) {
-        if (config.moduleEnabled && statScreen.wasPressed()) {
-            client.setScreen(new StatScreen());
-        }
+    public String getTitle() {
+        return "Statistik Skärmen";
+    }
+
+    @Override
+    public void onClick(MinecraftClient client) {
+        client.setScreen(new StatScreen());
     }
 
     @Override

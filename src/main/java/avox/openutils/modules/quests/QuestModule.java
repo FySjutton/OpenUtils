@@ -2,7 +2,7 @@ package avox.openutils.modules.quests;
 
 import avox.openutils.Module;
 import avox.openutils.OpenUtils;
-import avox.openutils.QuickToggleable;
+import avox.openutils.togglescreen.core.QuickToggleable;
 import dev.isxander.yacl3.api.ConfigCategory;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
@@ -15,36 +15,33 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.toast.SystemToast;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static avox.openutils.OpenUtils.*;
 import static avox.openutils.modules.quests.QuestManager.openQuestScreen;
 
 public class QuestModule extends Module<QuestModule.Config> implements QuickToggleable {
-    public static final QuestModule INSTANCE = new QuestModule(MinecraftClient.getInstance());
+    public static final QuestModule INSTANCE = new QuestModule();
     public static class Config extends ModuleConfig {
         @SerialEntry
         public int questPadY = 30;
     }
 
-    private static KeyBinding questScreen;
     public static boolean renderQuestHud = true;
     public static final String QUEST_TITLE = "Uppdrag";
     private boolean questsInitialized = false;
 
-    private QuestModule(MinecraftClient client) {
-        super("quests", 2, Config.class);
-        questScreen = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "Uppdragsskärmen",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_N,
-                category
-        ));
+    private QuestModule() {
+        super("quests", 15, Config.class);
 
         taskQueue.add(new OpenUtils.DelayedTask(20 * 15, QuestManager::checkQuestExpireTimes, 1));
         HudElementRegistry.addFirst(
@@ -69,29 +66,33 @@ public class QuestModule extends Module<QuestModule.Config> implements QuickTogg
     }
 
     @Override
-    public void tick(MinecraftClient client) {
-        if (config.moduleEnabled && playerInSurvival()) {
-            if (questScreen.wasPressed()) {
-                openQuestScreen = true;
-                QuestManager.reloadQuests();
-            }
-        }
-    }
-
-    @Override
     public String getTitle() {
         return "Quest Pad";
     }
 
     @Override
-    public Boolean isEnabled() {
+    public boolean isEnabled() {
         return renderQuestHud;
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
+    public void onToggle() {
         renderQuestHud = !renderQuestHud;
         addToast(MinecraftClient.getInstance(), "Quest Pad växlades!", getToggledString("Quest pad är nu %s!", renderQuestHud));
+    }
+
+    @Override
+    public List<Widget> getWidgets() {
+        List<Widget> widgets = new ArrayList<>();
+
+        ButtonWidget openFullscreenBtn = ButtonWidget.builder(Text.literal("Open Fullscreen"), btn -> {
+            MinecraftClient.getInstance().setScreen(null);
+            openQuestScreen = true;
+            QuestManager.reloadQuests();
+        }).dimensions(0, 0, 100, 0).build();
+        widgets.add(new Widget(openFullscreenBtn, () -> config.moduleEnabled && playerInSurvival()));
+
+        return widgets;
     }
 
     public Config getConfig() {

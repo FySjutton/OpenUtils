@@ -20,7 +20,7 @@ import static avox.openutils.OpenUtils.*;
 import static avox.openutils.SubserverManager.playerOn90gQopen;
 
 public class MarketResetModule extends Module<MarketResetModule.Config> {
-    public static final MarketResetModule INSTANCE = new MarketResetModule(MinecraftClient.getInstance());
+    public static final MarketResetModule INSTANCE = new MarketResetModule();
 
     public static class Config extends ModuleConfig {
         @SerialEntry
@@ -46,8 +46,8 @@ public class MarketResetModule extends Module<MarketResetModule.Config> {
             0x20FF00FF
     };
 
-    private MarketResetModule(MinecraftClient client) {
-        super("market_reset", 3, Config.class);
+    private MarketResetModule() {
+        super("market_reset", 42, Config.class);
 
         HudElementRegistry.addFirst(
             Identifier.of("openutils", "market_party"),

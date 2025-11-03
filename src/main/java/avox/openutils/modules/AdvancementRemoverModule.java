@@ -11,14 +11,14 @@ import net.minecraft.text.Text;
 import static avox.openutils.OpenUtils.taskQueue;
 
 public class AdvancementRemoverModule extends Module<AdvancementRemoverModule.Config> {
-    public static final AdvancementRemoverModule INSTANCE = new AdvancementRemoverModule(MinecraftClient.getInstance());
+    public static final AdvancementRemoverModule INSTANCE = new AdvancementRemoverModule();
     public static class Config extends ModuleConfig {}
     public static boolean removeAdvancements = false;
 
-    private AdvancementRemoverModule(MinecraftClient client) {
-        super("resource_advancement_remover", 7, Config.class);
+    private AdvancementRemoverModule() {
+        super("resource_advancement_remover", 52, Config.class);
 
-        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((mc, world) -> {
+        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> {
             removeAdvancements = true;
             client.getToastManager().clear();
             taskQueue.add(new OpenUtils.DelayedTask(20 * 3, () -> removeAdvancements = false));

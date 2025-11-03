@@ -3,3 +3,4 @@ accessWidener	v1	named
 accessible method net/minecraft/client/gui/widget/EntryListWidget getEntryCount ()I
 accessible field net/minecraft/client/gui/widget/CheckboxWidget checked Z
 accessible field net/minecraft/client/gui/widget/TextFieldWidget changedListener Ljava/util/function/Consumer;
+accessible field net/minecraft/client/option/KeyBinding boundKey Lnet/minecraft/client/util/InputUtil$Key;

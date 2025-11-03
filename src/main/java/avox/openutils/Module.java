@@ -22,7 +22,7 @@ public abstract class Module<T extends Module.BaseConfig> {
         return id;
     }
 
-    public abstract void tick(MinecraftClient client);
+    public void tick(MinecraftClient client) {}
 
     // Config
     public void applyConfig(Object loaded) {

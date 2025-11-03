@@ -54,7 +54,7 @@ public class WorldMapModule extends Module<WorldMapModule.Config> {
     }
 
     private WorldMapModule(MinecraftClient client) {
-        super("world_map", 10, Config.class);
+        super("world_map", 45, Config.class);
 
         HudElementRegistry.addFirst(
                 Identifier.of("openutils", "world_map"),

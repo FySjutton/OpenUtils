@@ -1,5 +1,6 @@
 package avox.openutils.modules.quests;
 
+import avox.openutils.OpenUtils;
 import avox.openutils.modules.quests.questScreen.QuestScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.screen.ScreenHandler;
@@ -13,7 +14,6 @@ import java.util.regex.Pattern;
 
 import static avox.openutils.OpenUtils.playerInSurvival;
 import static avox.openutils.modules.quests.QuestModule.renderQuestHud;
-import static avox.openutils.modules.quests.QuestModule.toggleQuestPad;
 
 public class QuestManager {
     public static final ArrayList<Quest> quests = new ArrayList<>();
@@ -24,7 +24,7 @@ public class QuestManager {
     public static void updateQuestList() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (!renderQuestHud) {
-            client.player.sendMessage(Text.of("§6OpenModpack: §eQuest Pad is disabled! §fToggle with: §7[" + toggleQuestPad.getBoundKeyLocalizedText().getString() + "]"), false);
+            client.player.sendMessage(Text.of("§6OpenModpack: §eQuest Pad is disabled! §fToggle in: §7[" + OpenUtils.configScreenKeybind.getBoundKeyLocalizedText().getString() + "]"), false);
         }
         ScreenHandler screenHandler = client.player.currentScreenHandler;
         List<String> questIDs = quests.stream().map(quest -> quest.ID).toList();

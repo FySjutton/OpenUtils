@@ -40,7 +40,7 @@ public class OpenUtils implements ModInitializer {
     private static final Map<String, Supplier<Text>> actionBarSuppliers = new HashMap<>();
     private static final Map<String, Integer> supplierTimers = new HashMap<>();
 
-    private static KeyBinding configScreenKeybind;
+    public static KeyBinding configScreenKeybind;
 
     @Override
 	public void onInitialize() {
@@ -60,7 +60,7 @@ public class OpenUtils implements ModInitializer {
         configScreenKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "Quick Toggle Screen",
             InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_KP_ENTER,
+            GLFW.GLFW_KEY_V,
             category
         ));
 
@@ -97,6 +97,7 @@ public class OpenUtils implements ModInitializer {
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             tickSuppliers();
+
             if (configScreenKeybind.wasPressed()) {
                 client.setScreen(new ToggleScreen());
             }
