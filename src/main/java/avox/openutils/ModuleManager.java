@@ -6,13 +6,16 @@ import net.minecraft.client.MinecraftClient;
 import java.util.*;
 
 public class ModuleManager {
-    private final Map<String, Module<?>> moduleMap = new HashMap<>();
     private final List<Module<?>> sortedModules = new ArrayList<>();
+    private final List<QuickToggleable> quickToggleModules = new ArrayList<>();
 
     public void registerModule(Module<?> module) {
-        moduleMap.put(module.getId(), module);
         sortedModules.add(module);
         sortedModules.sort(Comparator.comparingInt(a -> a.priority));
+
+        if (module instanceof QuickToggleable toggleableModule) {
+            quickToggleModules.add(toggleableModule);
+        }
     }
 
     public void tick(MinecraftClient client) {
@@ -29,5 +32,9 @@ public class ModuleManager {
 
     public List<Module<?>> getAllModules() {
         return List.copyOf(sortedModules);
+    }
+
+    public List<QuickToggleable> getQuickToggleModules() {
+        return quickToggleModules;
     }
 }

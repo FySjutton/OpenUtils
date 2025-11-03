@@ -2,6 +2,7 @@ package avox.openutils.modules.quests;
 
 import avox.openutils.Module;
 import avox.openutils.OpenUtils;
+import avox.openutils.QuickToggleable;
 import dev.isxander.yacl3.api.ConfigCategory;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
@@ -24,17 +25,14 @@ import org.lwjgl.glfw.GLFW;
 import static avox.openutils.OpenUtils.*;
 import static avox.openutils.modules.quests.QuestManager.openQuestScreen;
 
-public class QuestModule extends Module<QuestModule.Config> {
+public class QuestModule extends Module<QuestModule.Config> implements QuickToggleable {
     public static final QuestModule INSTANCE = new QuestModule(MinecraftClient.getInstance());
-
     public static class Config extends ModuleConfig {
         @SerialEntry
         public int questPadY = 30;
     }
 
     private static KeyBinding questScreen;
-    static KeyBinding toggleQuestPad;
-
     public static boolean renderQuestHud = true;
     public static final String QUEST_TITLE = "Uppdrag";
     private boolean questsInitialized = false;
@@ -45,12 +43,6 @@ public class QuestModule extends Module<QuestModule.Config> {
                 "Uppdragsskärmen",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_N,
-                category
-        ));
-        toggleQuestPad = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "Togglea Quest Pad",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_B,
                 category
         ));
 
@@ -83,12 +75,23 @@ public class QuestModule extends Module<QuestModule.Config> {
                 openQuestScreen = true;
                 QuestManager.reloadQuests();
             }
-
-            if (toggleQuestPad.wasPressed()) {
-                renderQuestHud = !renderQuestHud;
-                addToast(client, "Quest Pad växlades!", getToggledString("Quest pad är nu %s!", renderQuestHud));
-            }
         }
+    }
+
+    @Override
+    public String getTitle() {
+        return "Quest Pad";
+    }
+
+    @Override
+    public Boolean isEnabled() {
+        return renderQuestHud;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        renderQuestHud = !renderQuestHud;
+        addToast(MinecraftClient.getInstance(), "Quest Pad växlades!", getToggledString("Quest pad är nu %s!", renderQuestHud));
     }
 
     public Config getConfig() {

@@ -6,17 +6,21 @@ import avox.openutils.modules.MarketResetModule;
 import avox.openutils.modules.quests.QuestModule;
 import avox.openutils.modules.stats.StatsModule;
 import avox.openutils.modules.worldmap.WorldMapModule;
+import avox.openutils.togglescreen.ToggleScreen;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.toast.SystemToast;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +40,9 @@ public class OpenUtils implements ModInitializer {
     private static final Map<String, Supplier<Text>> actionBarSuppliers = new HashMap<>();
     private static final Map<String, Integer> supplierTimers = new HashMap<>();
 
-	@Override
+    private static KeyBinding configScreenKeybind;
+
+    @Override
 	public void onInitialize() {
 		// Register standard modules
 		moduleManager.registerModule(StatsModule.INSTANCE);
@@ -50,6 +56,13 @@ public class OpenUtils implements ModInitializer {
 			ConfigSystem.CONFIG.load();
 			ConfigSystem.applyModuleConfigs();
 		});
+
+        configScreenKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "Quick Toggle Screen",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_KP_ENTER,
+            category
+        ));
 
 		// Automatic subserver detection
 		taskQueue.add(new DelayedTask(20 * 30, () -> detectSubserver(MinecraftClient.getInstance()), 1));
@@ -84,6 +97,9 @@ public class OpenUtils implements ModInitializer {
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             tickSuppliers();
+            if (configScreenKeybind.wasPressed()) {
+                client.setScreen(new ToggleScreen());
+            }
         });
     }
 

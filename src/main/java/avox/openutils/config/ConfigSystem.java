@@ -1,6 +1,7 @@
 package avox.openutils.config;
 
 import avox.openutils.Module;
+import avox.openutils.OpenUtils;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.*;
 import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
@@ -14,8 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static avox.openutils.OpenUtils.LOGGER;
-import static avox.openutils.OpenUtils.moduleManager;
+import static avox.openutils.OpenUtils.*;
 
 public class ConfigSystem {
     @SerialEntry
@@ -57,4 +57,18 @@ public class ConfigSystem {
         }
     }
 
+    public static void scheduleSave() {
+        List<OpenUtils.DelayedTask> delayedTask = taskQueue.stream().filter(task -> task.specialAction == 2).toList();
+        if (delayedTask.isEmpty()) {
+            taskQueue.add(new OpenUtils.DelayedTask(20 * 10, ConfigSystem::saveConfig, 2));
+        } else {
+            delayedTask.getFirst().ticksLeft = 20 * 10;
+        }
+    }
+
+    public static void saveConfig() {
+        saveModuleConfigs();
+        CONFIG.save();
+        applyModuleConfigs();
+    }
 }
